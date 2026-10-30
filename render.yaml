@@ -1,0 +1,88 @@
+# Render Blueprint — Luana Rohr Art
+# Backend = Web Service (Node) · Frontend = Static Site.
+# O banco PostgreSQL NÃO é declarado aqui: reaproveitamos a instância paga
+# existente, cujo DATABASE_URL entra como secret (sync: false).
+# Redis = Upstash (REDIS_URL como secret). Storage = disco local (STORAGE_DRIVER=local).
+#
+# Ordem de setup (ovo-galinha):
+#   1. Conecte o Blueprint; preencha os secrets do backend (deixe BETTER_AUTH_URL,
+#      FRONTEND_URL e VITE_API_URL em branco por enquanto).
+#   2. Após o primeiro deploy, pegue as URLs finais dos dois serviços.
+#   3. Defina BETTER_AUTH_URL + FRONTEND_URL (backend) e VITE_API_URL (frontend)
+#      com as URLs .onrender.com e faça redeploy de AMBOS.
+# Cookies cross-site em .onrender.com são bloqueados (Public Suffix List) — o app
+# usa Bearer token (plugin ativo), então isso é esperado.
+
+services:
+  # ---------------- Backend (Web Service) ----------------
+  - type: web
+    name: luana-rohr-art-api
+    runtime: node
+    rootDir: backend
+    plan: starter
+    region: oregon
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    # preDeployCommand aplica migrations antes de subir a nova versão (planos pagos).
+    # Se o plano não suportar, remova esta linha e troque o startCommand por:
+    #   npm run db:migrate && npm run start
+    preDeployCommand: npm run db:migrate
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      - key: NODE_ENV
+        value: production
+      # Instância Postgres reaproveitada (prefira a Internal URL se mesma região).
+      - key: DATABASE_URL
+        sync: false
+      # Upstash: rediss://...  (BullMQ exige rediss + família 0; o client já trata)
+      - key: REDIS_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # Defina após o 1º deploy com a URL final do backend.
+      - key: BETTER_AUTH_URL
+        sync: false
+      # Defina após o 1º deploy com a URL final do frontend (CORS + trustedOrigins).
+      - key: FRONTEND_URL
+        sync: false
+      - key: PIX_KEY
+        sync: false
+      - key: PIX_MERCHANT_NAME
+        sync: false
+      - key: PIX_MERCHANT_CITY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # local = disco efêmero (imagens enviadas/exports somem em redeploy).
+      # Troque para s3 + credenciais R2 para persistência (ver Passo 6 do HANDOVER).
+      - key: STORAGE_DRIVER
+        value: local
+
+  # ---------------- Frontend (Static Site) ----------------
+  - type: web
+    name: luana-rohr-art-web
+    runtime: static
+    rootDir: frontend
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    # SPA fallback: toda rota serve index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.19.0
+      # Inlined no build — defina com a URL final do backend ANTES de buildar.
+      - key: VITE_API_URL
+        sync: false
