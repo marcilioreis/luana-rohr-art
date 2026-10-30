@@ -1,0 +1,10 @@
+{
+    "backend/src/**/*.ts": [
+        "npm run --prefix backend lint:fix",
+        "npm run --prefix backend format"
+    ],
+    "frontend/src/**/*.{ts,tsx,js,jsx}": [
+        "npm run --prefix frontend lint:fix",
+        "npm run --prefix frontend format"
+    ]
+}

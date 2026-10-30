@@ -1,0 +1,5 @@
+# Carrega o NVM para ter acesso à versão correta do Node
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+npx lint-staged

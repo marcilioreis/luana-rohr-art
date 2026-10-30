@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json.schemastudio.com/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Edit",
+      "Write",
+      "Bash(npm run lint*)",
+      "Bash(npm run format*)",
+      "Bash(npm run build*)",
+      "Bash(npm run dev*)",
+      "Bash(npm run db:push)",
+      "Bash(npm run db:migrate)",
+      "Bash(npm run e2e:setup)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(npx playwright test*)",
+      "Bash(npx shadcn:*)",
+      "Bash(tsx scripts/*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker compose up:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(cd backend*)",
+      "Bash(cd frontend*)",
+      "Bash(cd tests*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run start*)"
+    ],
+    "deny": [
+      "Read(./backend/.env)",
+      "Read(./frontend/.env)",
+      "Read(./.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/id_rsa*)",
+      "Read(./**/*-key.json)",
+      "Read(./**/service-account*.json)",
+      "Read(./exports/**)",
+      "Read(./backups/**)",
+      "Read(./**/fixtures/pii/**)",
+      "Bash(git push --force:*)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "120000"
+  },
+  "enabledMcpjsonServers": ["postgres", "playwright"]
+}

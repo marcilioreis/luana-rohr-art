@@ -1,0 +1,11 @@
+{
+  "_comment": "Copie para settings.local.json (gitignored) e ajuste preferências pessoais. Não comite este arquivo com segredos.",
+  "permissions": {
+    "allow": [
+      "Bash(npm run start*)"
+    ]
+  },
+  "env": {
+    "_comment_env": "Variáveis específicas da sua máquina podem ir aqui, mas NUNCA segredos reais (use .env do projeto)."
+  }
+}

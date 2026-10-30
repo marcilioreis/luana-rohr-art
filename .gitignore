@@ -1,0 +1,80 @@
+# ================================
+# Arquivos de sistema e IDE
+# ================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# ================================
+# Arquivos de ambiente e secrets
+# ================================
+.env
+.env.*
+!.env.example
+tests/.env.test
+.mcp.json
+.claude/settings.local.json
+
+# ================================
+# Logs e arquivos temporários
+# ================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.tmp
+temp/
+tmp/
+
+# ================================
+# Arquivos de teste/curl (cookies, etc.)
+# ================================
+cookie_marcilio.txt
+cookies_admin.txt
+cookies_pesq.txt
+cookies_view.txt
+cookies.txt
+*.cookies
+
+# ================================
+# Dependências e builds (por subprojeto)
+# ================================
+node_modules/
+package-lock.json          # Opcional: versionar ou não
+yarn.lock
+pnpm-lock.yaml
+
+# Backend
+backend/dist/
+backend/build/
+# backend/drizzle/           # Exclui metadados do Drizzle, mas você pode versionar migrations
+# backend/drizzle/migrations/  # Descomente se quiser versionar migrações
+
+# Frontend (futuro)
+frontend/dist/
+frontend/build/
+frontend/.next/            # Se usar Next.js
+frontend/out/
+
+# Testes
+tests/coverage/
+coverage/
+.nyc_output/
+
+# ================================
+# Outros
+# ================================
+*.tsbuildinfo
+.cache/
+repomix-output-marcilioreis-hajel-survey-platform.md
+@plan.md
+.playwright-mcp
+.kilo/
+

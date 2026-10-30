@@ -1,0 +1,28 @@
+{
+  "name": "luana-rohr-art",
+  "version": "1.0.0",
+  "description": "Loja virtual de camisetas com arte autoral de Luana Rohr (checkout via PIX copia e cola).",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "e2e:setup": "docker-compose up -d postgres redis && npm run migrate && npm run seed && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "migrate": "cd backend && npx drizzle-kit push",
+    "seed": "cd backend && tsx scripts/seed.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky",
+    "lint:all": "npm run --prefix backend lint && npm run --prefix frontend lint",
+    "format:all": "npm run --prefix backend format && npm run --prefix frontend format",
+    "dev:docker": "docker-compose --env-file .env up",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  }
+}
