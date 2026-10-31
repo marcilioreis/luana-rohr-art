@@ -28,6 +28,9 @@ const apiLimiter = rateLimit({
   message: { error: 'Limite de requisições da API excedido, tente novamente mais tarde.' },
   standardHeaders: true,
   legacyHeaders: false,
+  // Fail-open: se o store (Redis) falhar, deixa a requisição passar em vez de
+  // retornar 500. Evita que uma instabilidade do Upstash derrube toda a loja.
+  passOnStoreError: true,
 });
 
 const app = express();
