@@ -8,7 +8,10 @@ import * as schema from '../src/shared/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '../src/shared/auth/auth';
 
-const client = postgres(process.env.DATABASE_URL!);
+const connectionString = process.env.DATABASE_URL!;
+const client = postgres(connectionString, {
+  ssl: connectionString.includes('localhost') ? false : 'require',
+});
 const db = drizzle(client, { schema });
 
 const slugify = (value: string): string =>
