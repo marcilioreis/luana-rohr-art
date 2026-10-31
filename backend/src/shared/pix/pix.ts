@@ -81,7 +81,8 @@ export const buildPixPayload = (params: PixPayloadParams): string => {
 
   const payloadWithoutCrc =
     emvField('00', '01') + // Payload Format Indicator
-    emvField('01', '12') + // Point of Initiation Method (12 = uso único)
+    emvField('01', '11') + // Point of Initiation Method (11 = estático/reutilizável;
+    //                        correto p/ payload sem gateway. 12 = dinâmico exige URL de PSP)
     emvField('26', merchantAccount) +
     emvField('52', '0000') + // Merchant Category Code
     emvField('53', '986') + // Moeda: BRL
