@@ -30,8 +30,10 @@ export default function AboutPage() {
         <div className="flex items-start justify-center">
           <div className="relative aspect-[4/5] w-full max-w-xs overflow-hidden rounded-xl border bg-accent/30 shadow-sm">
             <img
-              src="/luana.jpg"
+              src="/luana.webp"
               alt="Retrato de Luana Rohr"
+              width={700}
+              height={933}
               className="h-full w-full object-cover"
               loading="lazy"
             />
