@@ -47,6 +47,7 @@ export default function AdminProductForm({ product }: Props) {
   const { data: collections = [] } = useGetCollectionsQuery();
 
   const [name, setName] = useState(product?.name ?? "");
+  const [slug, setSlug] = useState(product?.slug ?? "");
   const [basePrice, setBasePrice] = useState(String(product?.basePrice ?? ""));
   const [description, setDescription] = useState(product?.description ?? "");
   const [active, setActive] = useState(product?.active ?? true);
@@ -81,6 +82,7 @@ export default function AdminProductForm({ product }: Props) {
     try {
       await createProduct({
         name: name.trim(),
+        slug: slug.trim() || undefined,
         basePrice: price,
         description: description.trim() || null,
         active,
@@ -104,6 +106,7 @@ export default function AdminProductForm({ product }: Props) {
         id: product.id,
         body: {
           name: name.trim(),
+          slug: slug.trim() || undefined,
           basePrice: price,
           description: description.trim() || null,
           active,
@@ -174,6 +177,20 @@ export default function AdminProductForm({ product }: Props) {
             data-testid="prod-name"
             required
           />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="prod-slug">URL (slug)</Label>
+          <Input
+            id="prod-slug"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            data-testid="prod-slug"
+            placeholder="gerado a partir do nome se vazio"
+          />
+          <p className="text-xs text-muted-foreground">
+            Endereço da página: <code>/produto/{slug || "…"}</code>. Deixe em
+            branco para gerar do nome. Alterar muda o link do produto.
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
