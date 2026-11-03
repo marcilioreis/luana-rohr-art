@@ -25,7 +25,7 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
           <h3 className="font-medium leading-tight line-clamp-2">
             {product.name}
           </h3>
-          <p className="mt-2 text-lg font-semibold text-primary">
+          <p className="mt-2 text-lg font-semibold text-brand-red">
             {formatBRL(product.basePrice)}
           </p>
         </CardContent>

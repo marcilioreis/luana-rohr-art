@@ -137,7 +137,7 @@ export default function ProductDetail() {
         {/* Detalhes */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-          <p className="mt-2 text-2xl font-semibold text-primary">
+          <p className="mt-2 text-2xl font-semibold text-brand-red">
             {formatBRL(price)}
           </p>
           {product.description && (
