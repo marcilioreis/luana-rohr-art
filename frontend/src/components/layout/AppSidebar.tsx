@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAppSelector } from "@/app/hooks";
 import { cn } from "@/lib/utils";
+import { Mandala } from "@/components/brand/Mandala";
 import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard,
@@ -30,9 +31,14 @@ export function AppSidebar({ onClose }: SidebarProps) {
 
   const content = (
     <div className="flex h-full flex-col py-4">
-      <div className="px-4">
-        <h2 className="text-lg font-bold tracking-tight">Luana Rohr</h2>
-        <p className="text-xs text-muted-foreground">Administração da loja</p>
+      <div className="flex items-center gap-2.5 px-4">
+        <Mandala className="h-7 w-7 text-primary" />
+        <div>
+          <h2 className="font-heading text-lg font-medium tracking-tight">
+            Luana Rohr
+          </h2>
+          <p className="text-xs text-muted-foreground">Administração da loja</p>
+        </div>
       </div>
       <Separator className="my-3" />
       <nav className="flex-1 space-y-1 p-2">
