@@ -2,10 +2,14 @@
 #
 # setup.sh — Automatiza os passos 3–6 do RUNBOOK.md para a loja Luana Rohr Art.
 #
-#   3. Sobe os containers Postgres (lra-postgres:5433) e Redis (lra-redis:6380)
+#   3. Sobe os containers Postgres e Redis
 #   4. Instala dependências (root, backend, frontend; tests com --with-tests)
 #   5. Aplica migrations e semeia dados de exemplo
 #   6. Sobe backend (:3000) e frontend (:5173)
+#
+# As credenciais/portas do Postgres e do Redis são lidas de backend/.env
+# (DATABASE_URL e REDIS_URL) — nada é hardcoded, então o container é criado
+# batendo exatamente com o seu .env.
 #
 # Pré-requisitos (RUNBOOK seção 0): docker, node >= 20.19, e os arquivos
 # backend/.env e frontend/.env já criados (RUNBOOK seção 2).
@@ -18,20 +22,12 @@
 #
 set -euo pipefail
 
-# ---------- Config (casa com o RUNBOOK.md) ----------
 PG_NAME=lra-postgres
-PG_PORT=5433
-PG_DB=luana_rohr_art
-PG_USER=postgres
-PG_PASS=postgres
 REDIS_NAME=lra-redis
-REDIS_PORT=6380
-
 RUN_SERVERS=1
 INSTALL_TESTS=0
 RESET_DB=0
 
-# ---------- Flags ----------
 for arg in "$@"; do
   case "$arg" in
     --no-run) RUN_SERVERS=0 ;;
@@ -59,6 +55,30 @@ fi
 [ -f backend/.env ]  || die "backend/.env ausente — crie-o antes (RUNBOOK seção 2)"
 [ -f frontend/.env ] || die "frontend/.env ausente — crie-o antes (RUNBOOK seção 2)"
 
+# ---------- Lê credenciais do backend/.env ----------
+envval() { grep -E "^$1=" backend/.env | head -1 | sed -E "s/^$1=//; s/^[\"']//; s/[\"']\$//"; }
+DATABASE_URL="$(envval DATABASE_URL || true)"
+REDIS_URL="$(envval REDIS_URL || true)"
+[ -n "$DATABASE_URL" ] || die "DATABASE_URL não encontrado em backend/.env"
+
+# Parse confiável via node (lida com senha codificada e defaults)
+IFS=$'\t' read -r PG_USER PG_PASS PG_DB PG_HOST PG_PORT < <(node -e '
+  const u = new URL(process.argv[1]); const d = decodeURIComponent;
+  process.stdout.write([d(u.username), d(u.password), d(u.pathname.replace(/^\//,"")),
+                        u.hostname, u.port || "5432"].join("\t"));
+' "$DATABASE_URL")
+[ -n "${PG_USER:-}" ] && [ -n "${PG_DB:-}" ] || die "não consegui parsear DATABASE_URL"
+
+REDIS_HOST=localhost; REDIS_PORT=6380
+if [ -n "$REDIS_URL" ]; then
+  IFS=$'\t' read -r REDIS_HOST REDIS_PORT < <(node -e '
+    const u = new URL(process.argv[1]);
+    process.stdout.write([u.hostname, u.port || "6379"].join("\t"));
+  ' "$REDIS_URL")
+fi
+
+is_local() { case "$1" in localhost|127.0.0.1|::1|0.0.0.0) return 0 ;; *) return 1 ;; esac; }
+
 # ---------- Passo 3: containers ----------
 ensure_container() {
   local name="$1"; shift
@@ -71,34 +91,51 @@ ensure_container() {
   fi
 }
 
-log "Passo 3 — containers Postgres e Redis"
-if [ "$RESET_DB" -eq 1 ]; then
-  warn "--reset-db: removendo $PG_NAME (os dados serão perdidos)"
-  docker rm -f "$PG_NAME" >/dev/null 2>&1 || true
-fi
-ensure_container "$PG_NAME" \
-  -e POSTGRES_PASSWORD="$PG_PASS" -e POSTGRES_DB="$PG_DB" \
-  -p "${PG_PORT}:5432" postgres:15
-ensure_container "$REDIS_NAME" -p "${REDIS_PORT}:6379" redis:7-alpine
+log "Passo 3 — containers Postgres e Redis (a partir do backend/.env)"
+echo "   Postgres: user=$PG_USER db=$PG_DB em $PG_HOST:$PG_PORT · Redis: $REDIS_HOST:$REDIS_PORT"
 
-echo "   aguardando o Postgres aceitar conexões..."
-for i in $(seq 1 30); do
-  if docker exec "$PG_NAME" pg_isready -U "$PG_USER" >/dev/null 2>&1; then
-    echo "   Postgres pronto."
-    break
-  fi
-  [ "$i" -eq 30 ] && die "Postgres não respondeu a tempo"
-  sleep 1
-done
-
-# Garante o banco (um container reaproveitado pode não tê-lo: POSTGRES_DB só
-# cria o banco na primeira inicialização do volume).
-if docker exec "$PG_NAME" psql -U "$PG_USER" -tAc \
-     "SELECT 1 FROM pg_database WHERE datname='${PG_DB}'" | grep -q 1; then
-  echo "   banco '${PG_DB}' já existe."
+if ! is_local "$PG_HOST"; then
+  warn "DATABASE_URL aponta para host externo ($PG_HOST) — pulando o container Postgres."
 else
-  echo "   criando banco '${PG_DB}'..."
-  docker exec "$PG_NAME" createdb -U "$PG_USER" "$PG_DB"
+  if [ "$RESET_DB" -eq 1 ]; then
+    warn "--reset-db: removendo $PG_NAME (os dados serão perdidos)"
+    docker rm -f "$PG_NAME" >/dev/null 2>&1 || true
+  fi
+  # Se o container já existe, confere se as credenciais batem com o .env
+  if docker ps -a --format '{{.Names}}' | grep -qx "$PG_NAME"; then
+    EXIST_USER="$(docker inspect "$PG_NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^POSTGRES_USER=//p' | head -1)"
+    EXIST_USER="${EXIST_USER:-postgres}"
+    EXIST_DB="$(docker inspect "$PG_NAME" --format '{{range .Config.Env}}{{println .}}{{end}}' | sed -n 's/^POSTGRES_DB=//p' | head -1)"
+    EXIST_DB="${EXIST_DB:-$EXIST_USER}"
+    if [ "$EXIST_USER" != "$PG_USER" ] || [ "$EXIST_DB" != "$PG_DB" ]; then
+      die "container '$PG_NAME' existe com user=$EXIST_USER db=$EXIST_DB, mas o .env quer user=$PG_USER db=$PG_DB.
+   Rode:  ./setup.sh --reset-db   (recria o container — APAGA os dados dele)"
+    fi
+  fi
+  ensure_container "$PG_NAME" \
+    -e POSTGRES_USER="$PG_USER" -e POSTGRES_PASSWORD="$PG_PASS" -e POSTGRES_DB="$PG_DB" \
+    -p "${PG_PORT}:5432" postgres:15
+
+  echo "   aguardando o Postgres aceitar conexões..."
+  for i in $(seq 1 30); do
+    docker exec "$PG_NAME" pg_isready -U "$PG_USER" >/dev/null 2>&1 && { echo "   Postgres pronto."; break; }
+    [ "$i" -eq 30 ] && die "Postgres não respondeu a tempo"
+    sleep 1
+  done
+
+  # Garante o banco (container reaproveitado pode não tê-lo)
+  if docker exec "$PG_NAME" psql -U "$PG_USER" -tAc \
+       "SELECT 1 FROM pg_database WHERE datname='${PG_DB}'" | grep -q 1; then
+    echo "   banco '${PG_DB}' já existe."
+  else
+    echo "   criando banco '${PG_DB}'..."; docker exec "$PG_NAME" createdb -U "$PG_USER" "$PG_DB"
+  fi
+fi
+
+if ! is_local "$REDIS_HOST"; then
+  warn "REDIS_URL aponta para host externo ($REDIS_HOST) — pulando o container Redis."
+else
+  ensure_container "$REDIS_NAME" -p "${REDIS_PORT}:6379" redis:7-alpine
 fi
 
 # ---------- Passo 4: dependências ----------
@@ -106,9 +143,7 @@ log "Passo 4 — instalando dependências"
 npm install
 npm install --prefix backend
 npm install --prefix frontend
-if [ "$INSTALL_TESTS" -eq 1 ]; then
-  npm install --prefix tests
-fi
+[ "$INSTALL_TESTS" -eq 1 ] && npm install --prefix tests || true
 
 # ---------- Passo 5: migrate + seed ----------
 log "Passo 5 — migrations"

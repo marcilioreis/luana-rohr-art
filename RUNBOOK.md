@@ -125,6 +125,12 @@ Depois de criar os `.env` (seção 2), dá para rodar tudo de uma vez:
 ./setup.sh --help
 ```
 
+> O script **lê usuário/senha/banco/porta do `DATABASE_URL` (e a porta do
+> `REDIS_URL`) em `backend/.env`** e cria o container do Postgres batendo com
+> isso — não importa se seu usuário é `postgres`, `marcilioreis`, etc. Se já
+> existir um `lra-postgres` com credenciais diferentes, o script avisa e você
+> roda `./setup.sh --reset-db` para recriá-lo.
+
 O script é idempotente (reaproveita containers existentes, seed sem duplicar). As
 seções abaixo descrevem os mesmos passos manualmente, caso prefira.
 
@@ -132,12 +138,22 @@ seções abaixo descrevem os mesmos passos manualmente, caso prefira.
 
 ## 3. Banco de dados + Redis (containers isolados)
 
+> Prefira o `setup.sh` (acima): ele cria o container derivando usuário/senha/
+> banco/porta do seu `DATABASE_URL`. Faça manual só se quiser.
+
 Cria os containers nas **mesmas portas** que o `.env` espera (5433 / 6380). Não use
 `docker compose up` nesta máquina — veja _Gotchas_.
 
+> ⚠️ `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB`/porta precisam ser
+> **idênticos** ao `DATABASE_URL` do seu `backend/.env`. Se o seu usuário não é
+> `postgres` (ex.: `marcilioreis`), ajuste os `-e POSTGRES_*` abaixo. Esses
+> valores só valem num **volume novo** — se o container já existe com credenciais
+> diferentes, remova antes (`docker rm -f lra-postgres`).
+
 ```bash
+# Ajuste POSTGRES_USER/PASSWORD/DB e a porta para casar com o seu DATABASE_URL:
 docker run -d --name lra-postgres \
-  -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=luana_rohr_art \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=luana_rohr_art \
   -p 5433:5432 postgres:15
 
 docker run -d --name lra-redis \
