@@ -26,13 +26,16 @@ export default function AboutPage() {
       </section>
 
       <div className="mx-auto grid max-w-5xl gap-10 px-4 py-14 md:grid-cols-[1fr_1.4fr]">
-        {/* Retrato / arte */}
+        {/* Retrato da artista */}
         <div className="flex items-start justify-center">
-          <div className="relative aspect-[4/5] w-full max-w-xs overflow-hidden rounded-xl border bg-accent/30">
-            <Mandala className="absolute inset-0 m-auto h-40 w-40 text-primary/30" />
-            <span className="absolute inset-x-0 bottom-3 text-center text-xs text-muted-foreground">
-              retrato · em breve
-            </span>
+          <div className="relative aspect-[4/5] w-full max-w-xs overflow-hidden rounded-xl border bg-accent/30 shadow-sm">
+            <img
+              src="/luana.jpg"
+              alt="Retrato de Luana Rohr"
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <Mandala className="absolute -right-3 -top-3 h-14 w-14 text-brand-red/80" />
           </div>
         </div>
 
