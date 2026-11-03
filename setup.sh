@@ -83,13 +83,23 @@ ensure_container "$REDIS_NAME" -p "${REDIS_PORT}:6379" redis:7-alpine
 
 echo "   aguardando o Postgres aceitar conexões..."
 for i in $(seq 1 30); do
-  if docker exec "$PG_NAME" pg_isready -U "$PG_USER" -d "$PG_DB" >/dev/null 2>&1; then
+  if docker exec "$PG_NAME" pg_isready -U "$PG_USER" >/dev/null 2>&1; then
     echo "   Postgres pronto."
     break
   fi
   [ "$i" -eq 30 ] && die "Postgres não respondeu a tempo"
   sleep 1
 done
+
+# Garante o banco (um container reaproveitado pode não tê-lo: POSTGRES_DB só
+# cria o banco na primeira inicialização do volume).
+if docker exec "$PG_NAME" psql -U "$PG_USER" -tAc \
+     "SELECT 1 FROM pg_database WHERE datname='${PG_DB}'" | grep -q 1; then
+  echo "   banco '${PG_DB}' já existe."
+else
+  echo "   criando banco '${PG_DB}'..."
+  docker exec "$PG_NAME" createdb -U "$PG_USER" "$PG_DB"
+fi
 
 # ---------- Passo 4: dependências ----------
 log "Passo 4 — instalando dependências"
