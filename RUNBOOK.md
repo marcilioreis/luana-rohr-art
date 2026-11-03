@@ -17,8 +17,11 @@ sudo apt update
 sudo apt install -y git curl postgresql-client   # psql é usado no teardown do E2E
 
 # Docker: use Docker Desktop (Windows) com integração WSL habilitada,
-# OU instale o engine no WSL. Teste:
-docker --version && docker compose version
+# OU instale o engine no WSL. Teste (basta o docker "cru"):
+docker --version && docker ps
+# OBS.: este fluxo NÃO usa `docker compose` — tudo roda com `docker run`
+# (setup.sh / seção 3). Se faltar o plugin do compose, pode ignorar; para
+# instalá-lo mesmo assim (opcional): sudo apt install -y docker-compose-plugin
 
 # Node 20.19+ (o projeto exige >=20.19.0; 20.x ou 22.x funcionam). Via nvm:
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
