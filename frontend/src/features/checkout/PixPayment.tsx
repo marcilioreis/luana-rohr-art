@@ -6,7 +6,8 @@ import type { Order } from "../account/orders.types";
 import { formatBRL } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, CheckCircle2, Link2, Truck, Store } from "lucide-react";
+import { Copy, Check, Link2, Truck, Store } from "lucide-react";
+import { Mandala } from "@/components/brand/Mandala";
 import { useAppSelector } from "@/app/hooks";
 import { DELIVERY_METHOD_LABELS, PICKUP_NOTICE } from "../account/orders.types";
 
@@ -45,8 +46,10 @@ export default function PixPayment({ order }: { order: Order }) {
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <div className="mb-6 text-center">
-        <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />
-        <h1 className="mt-3 text-2xl font-bold">Pedido criado!</h1>
+        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-accent">
+          <Mandala className="h-9 w-9 text-primary" />
+        </div>
+        <h1 className="text-2xl font-medium">Pedido criado!</h1>
         <p className="text-muted-foreground">
           Pedido <strong>{order.orderNumber}</strong> — aguardando pagamento.
         </p>

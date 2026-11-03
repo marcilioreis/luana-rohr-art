@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useGetOrderQuery } from "./ordersApi";
 import { DELIVERY_METHOD_LABELS, PICKUP_NOTICE } from "./orders.types";
 import OrderStatusBadge from "./OrderStatusBadge";
+import PageLoader from "@/components/common/PageLoader";
 import { formatBRL, formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,11 +15,7 @@ export default function OrderDetail() {
   const { data: order, isLoading, isError } = useGetOrderQuery(Number(id));
 
   if (isLoading) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-8 text-muted-foreground">
-        Carregando...
-      </div>
-    );
+    return <PageLoader label="Carregando o pedido…" />;
   }
   if (isError || !order) {
     return (

@@ -18,6 +18,8 @@ import {
   type DeliveryMethod,
 } from "../account/orders.types";
 import { formatBRL } from "@/utils/format";
+import { Mandala } from "@/components/brand/Mandala";
+import PageLoader from "@/components/common/PageLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,9 +117,7 @@ export default function CheckoutPage() {
 
   // Aguarda resolução da sessão antes de decidir o fluxo
   if (isLoadingAuth) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">Carregando...</div>
-    );
+    return <PageLoader />;
   }
 
   if (items.length === 0) {
@@ -135,7 +135,8 @@ export default function CheckoutPage() {
   if (!isAuthenticated && step === "choice") {
     return (
       <div className="mx-auto max-w-md px-4 py-12">
-        <h1 className="mb-2 text-2xl font-bold tracking-tight">
+        <Mandala className="mb-4 h-10 w-10 text-primary" />
+        <h1 className="mb-2 text-2xl font-medium tracking-tight">
           Finalizar compra
         </h1>
         <p className="mb-6 text-sm text-muted-foreground">

@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useGetOrderByTokenQuery } from "../account/ordersApi";
 import { DELIVERY_METHOD_LABELS, PICKUP_NOTICE } from "../account/orders.types";
 import OrderStatusBadge from "../account/OrderStatusBadge";
+import PageLoader from "@/components/common/PageLoader";
 import PixPayment from "./PixPayment";
 import { formatBRL } from "@/utils/format";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,7 @@ export default function OrderConfirmation() {
   const { data: order, isLoading, isError } = useGetOrderByTokenQuery(token);
 
   if (isLoading) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">Carregando...</div>
-    );
+    return <PageLoader label="Carregando seu pedido…" />;
   }
 
   if (isError || !order) {

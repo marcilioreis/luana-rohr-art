@@ -3,6 +3,8 @@ import { useGetMyOrdersQuery } from "./ordersApi";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { formatBRL, formatDate } from "@/utils/format";
 import { Button } from "@/components/ui/button";
+import { Mandala } from "@/components/brand/Mandala";
+import PageLoader from "@/components/common/PageLoader";
 import {
   Table,
   TableBody,
@@ -16,18 +18,15 @@ export default function MyOrders() {
   const { data: orders, isLoading } = useGetMyOrdersQuery();
 
   if (isLoading) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-8 text-muted-foreground">
-        Carregando...
-      </div>
-    );
+    return <PageLoader label="Carregando seus pedidos…" />;
   }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">Meus pedidos</h1>
+      <h1 className="mb-6 text-3xl font-medium tracking-tight">Meus pedidos</h1>
       {!orders || orders.length === 0 ? (
         <div className="rounded-xl border p-12 text-center">
+          <Mandala className="mx-auto mb-4 h-14 w-14 text-primary/30" />
           <p className="text-muted-foreground">
             Você ainda não fez nenhum pedido.
           </p>
