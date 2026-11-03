@@ -41,8 +41,9 @@ pagamento, export).
   `src/shared/pix/pix.ts` (EMV TLV + CRC16-CCITT, sem gateway). View **`orders_enriched`** criada ao
   final de `drizzle/0000_init_store.sql` (após `--> statement-breakpoint`).
 - **Frontend** (`frontend/`): React 19 + Vite + Tailwind 4 + shadcn/ui + RTK Query + Recharts +
-  `qrcode.react`. Loja pública (Home, Sobre, PLP, PDP), carrinho (localStorage), checkout com QR PIX,
-  área do cliente e painel admin (produtos, pedidos, relatórios, usuários/papéis).
+  `qrcode.react`. Loja pública (Home, Sobre, PLP, PDP), carrinho (localStorage), checkout com QR PIX
+  (login **ou** convidado, com entrega por CEP/UF ou retirada sem custo), área do cliente e painel
+  admin (produtos, pedidos, relatórios, usuários/papéis).
 - **Tests** (`tests/`): Playwright (`store.spec.ts`, `admin.spec.ts`, `auth.spec.ts`).
 - Verificado: lint (0 erros), typecheck, build + PWA, 6/6 testes do PIX; fluxo de pedido ponta a
   ponta (estoque, transições de status, confirmação de pagamento, RBAC 403, export BullMQ, GraphQL).
@@ -136,7 +137,7 @@ tabelas + a view `orders_enriched`). **Confirme o `DATABASE_URL` com o usuário 
 | `FRONTEND_URL` | `https://<frontend-static>.onrender.com` (usado por CORS e trustedOrigins) |
 | `PIX_KEY` / `PIX_MERCHANT_NAME` / `PIX_MERCHANT_CITY` | dados reais do recebedor PIX |
 | `ADMIN_EMAIL` / `ADMIN_NAME` / `ADMIN_PASSWORD` | admin inicial (usado pelo seed) |
-| `STORAGE_DRIVER` | `local` para começar, ou `s3` para R2 (ver Passo 6) |
+| `STORAGE_DRIVER` | `s3` (R2, já configurado — ver Passo 6) · `local` só para testes com disco efêmero |
 
 **Frontend (Static Site):**
 | Chave | Valor |
@@ -155,22 +156,33 @@ tabelas + a view `orders_enriched`). **Confirme o `DATABASE_URL` com o usuário 
   roles (`admin`, `cliente`), permissões, o admin inicial e 3 produtos de exemplo com variantes e
   imagens placeholder (URLs externas `placehold.co`, então a vitrine funciona sem R2).
 
-### Passo 6 — (Opcional) Storage R2 para imagens/exports persistentes
-Render tem filesystem efêmero (imagens enviadas pelo admin e exports somem em redeploy). Para
-persistência, use Cloudflare R2 (`STORAGE_DRIVER=s3`):
+### Passo 6 — Storage R2 para imagens/exports persistentes ✅ CONFIGURADO
+Render tem filesystem efêmero (imagens enviadas pelo admin e exports somem em redeploy). Por isso o
+storage usa Cloudflare R2 (`STORAGE_DRIVER=s3`). **Já configurado e validado** (upload de imagem de
+produto funcionando em produção). Envs no serviço `luana-rohr-art-api` (todas como `sync: false` no
+`render.yaml`, exceto PORT/SSL/REGION que têm valor fixo):
 | Chave | Valor |
 |---|---|
 | `STORAGE_DRIVER` | `s3` |
 | `STORAGE_BUCKET` | nome do bucket R2 |
-| `STORAGE_ENDPOINT` | `<account_id>.r2.cloudflarestorage.com` |
+| `STORAGE_ENDPOINT` | `<account_id>.r2.cloudflarestorage.com` (**só o host**, sem `https://`) |
 | `STORAGE_PORT` | `443` · `STORAGE_USE_SSL` | `true` · `STORAGE_REGION` | `auto` |
 | `STORAGE_ACCESS_KEY` / `STORAGE_SECRET_KEY` | credenciais R2 |
+| `STORAGE_PUBLIC_URL` | URL pública do bucket, com `https://` e **sem barra no fim** |
 
-Para que as **imagens de produto** fiquem acessíveis publicamente, habilite acesso público no bucket
-ou um domínio público R2 e ajuste, se necessário, o retorno de `storage.save()` em
-`backend/src/shared/storage/storage.ts` para montar a URL pública correta. Exports usam
-`getSignedDownloadUrl` (já tratado). Para um primeiro deploy, `STORAGE_DRIVER=local` + imagens por
-URL externa é suficiente.
+**URL pública das imagens** (`STORAGE_PUBLIC_URL`): o `storage.save()` monta a URL como
+`${STORAGE_PUBLIC_URL}/${fileName}` — o nome do bucket **não** entra nela. Hoje em uso: **Public
+Development URL do R2** (`https://pub-<hash>.r2.dev`), com o aviso esperado de rate-limit (ok para
+baixo tráfego). Para produção-plena, trocar por **domínio custom** (bucket → Settings → Custom
+Domains; exige a zona DNS no Cloudflare) e atualizar só a env `STORAGE_PUBLIC_URL` — sem mudança de
+código. Requisito em ambos os casos: **acesso público habilitado no bucket**.
+
+Exports usam `getSignedDownloadUrl` (presigned, já tratado). Alternativa a bucket público, se um dia
+quiser R2 100% privado: proxy das imagens pelo backend (over-engineering para fotos de catálogo).
+
+> ⚠️ **Gotchas do blueprint/env (resolvidos no commit 7a8c7c2):** `STORAGE_DRIVER` é `sync: false` no
+> `render.yaml` — se fosse `value: local`, o Render reverteria a cada deploy. E `STORAGE_ENDPOINT`
+> ausente faz o endpoint virar `https://undefined:443` → `getaddrinfo ENOTFOUND undefined` no upload.
 
 ### Passo 7 — (Opcional) Blueprint `render.yaml`
 Para IaC, o agente pode criar na raiz um `render.yaml` com os dois serviços (sem declarar o banco,
@@ -240,13 +252,18 @@ services:
 - [ ] Como admin: confirmar pagamento → *pago*; avançar para *enviado*; exportar pedidos (job BullMQ
       + polling) e baixar o arquivo
 - [ ] RBAC: cliente comum recebe 403 em `/api/orders` (lista admin) e `POST /api/products`
+- [x] Upload de imagem de produto no admin → sobe no R2 e a `<img>` carrega pela URL pública ✅
 
 ---
 
 ## Itens em aberto / melhorias futuras
-- **Checkout como convidado** (hoje exige login): `orders.customerId` já é nullable; bastaria relaxar
-  a rota.
+- ~~**Checkout como convidado** (hoje exige login)~~ ✅ **CONCLUÍDO** (commit `ad74a43`): `POST
+  /api/orders` é público (`optionalAuthenticate`); cada pedido de convidado recebe um `access_token`
+  e é acompanhado por `/pedido/:token` (rota pública `GET /api/orders/track/:token`). No mesmo commit:
+  frete server-authoritative por UF (`shared/shipping`), busca de endereço por CEP (ViaCEP) e
+  modalidade de **retirada** (sem custo, agendada). Migrations `0001`/`0002`; E2E cobrindo o fluxo.
 - **Categorias/coleções** na PLP (nice-to-have, não implementado).
-- **URL pública de imagens no R2** (ver Passo 6) se for usar upload de imagem em produção.
+- **Domínio custom para as imagens R2** (hoje usa a Public Development URL `r2.dev`, rate-limited):
+  migrar `STORAGE_PUBLIC_URL` para um domínio custom quando o tráfego justificar (ver Passo 6).
 - Avaliar servir o frontend por um **Express web service** (em vez de Static Site) se o problema de
   MIME do Render Static Site reaparecer.
