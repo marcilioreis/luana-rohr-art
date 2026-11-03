@@ -75,7 +75,7 @@ export default function RoleForm({ initialRole }: RoleFormProps) {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-6">
+      <h1 className="text-2xl font-medium tracking-tight mb-6">
         {isEditing ? "Editar Permissão" : "Nova Permissão"}
       </h1>
       <form

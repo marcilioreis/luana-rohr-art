@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetRolesQuery, useDeleteRoleMutation } from "./adminApi";
 import { toast } from "sonner";
+import PageLoader from "@/components/common/PageLoader";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -41,12 +42,12 @@ export default function RoleList() {
     }
   };
 
-  if (isLoading) return <div className="p-4">Carregando roles...</div>;
+  if (isLoading) return <PageLoader label="Carregando permissões…" />;
 
   return (
     <div className="p-4 pb-20 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Permissões</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Permissões</h1>
         <Button className="hidden" onClick={() => navigate("/admin/roles/new")}>
           <PlusCircle className="h-4 w-4 mr-2" />
           Nova Permissão

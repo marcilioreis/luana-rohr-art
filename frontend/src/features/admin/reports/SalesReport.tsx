@@ -1,4 +1,5 @@
 import { useGetSalesReportQuery } from "./reportsApi";
+import PageLoader from "@/components/common/PageLoader";
 import { ORDER_STATUS_LABELS } from "../../account/orders.types";
 import type { OrderStatus } from "../../account/orders.types";
 import { formatBRL } from "@/utils/format";
@@ -35,10 +36,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function SalesReport() {
   const { data, isLoading, isError } = useGetSalesReportQuery();
 
-  if (isLoading)
-    return (
-      <div className="p-6 text-muted-foreground">Carregando relatórios...</div>
-    );
+  if (isLoading) return <PageLoader label="Carregando relatórios…" />;
   if (isError || !data)
     return (
       <div className="p-6 text-destructive">
@@ -56,7 +54,9 @@ export default function SalesReport() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      <h1 className="text-2xl font-bold">Relatórios de vendas</h1>
+      <h1 className="text-3xl font-medium tracking-tight">
+        Relatórios de vendas
+      </h1>
 
       {/* Resumo */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useGetAdminProductQuery } from "../../products/productsApi";
 import AdminProductForm from "./AdminProductForm";
+import PageLoader from "@/components/common/PageLoader";
 
 export default function AdminProductFormWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -10,7 +11,7 @@ export default function AdminProductFormWrapper() {
   });
 
   if (isEditing && isLoading) {
-    return <div className="p-4">Carregando produto...</div>;
+    return <PageLoader label="Carregando produto…" />;
   }
 
   return <AdminProductForm key={id ?? "new"} product={product} />;

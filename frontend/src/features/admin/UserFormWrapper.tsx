@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useGetUserByIdQuery } from "./adminApi";
 import UserForm from "./UserForm";
+import PageLoader from "@/components/common/PageLoader";
 
 export default function UserFormWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -10,7 +11,7 @@ export default function UserFormWrapper() {
   });
 
   if (isEditing && isLoading) {
-    return <div className="p-4">Carregando usuário...</div>;
+    return <PageLoader label="Carregando usuário…" />;
   }
 
   return <UserForm key={id ?? "new"} initialUser={user} />;

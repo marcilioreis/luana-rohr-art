@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PageLoader from "@/components/common/PageLoader";
 import { useGetAdminOrdersQuery } from "../../account/ordersApi";
 import type { OrderStatus } from "../../account/orders.types";
 import { ORDER_STATUS_LABELS } from "../../account/orders.types";
@@ -34,7 +35,7 @@ export default function AdminOrderList() {
   return (
     <div className="space-y-4 p-4 pb-20">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold">Pedidos</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Pedidos</h1>
         <div className="flex items-center gap-3">
           <Select
             value={status}
@@ -57,7 +58,7 @@ export default function AdminOrderList() {
       </div>
 
       {isLoading ? (
-        <div className="p-4 text-muted-foreground">Carregando pedidos...</div>
+        <PageLoader label="Carregando pedidos…" />
       ) : (
         <div className="rounded-lg border bg-card">
           <Table>

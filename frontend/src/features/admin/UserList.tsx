@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery, useDeleteUserMutation } from "./adminApi";
 import { toast } from "sonner";
+import PageLoader from "@/components/common/PageLoader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +49,7 @@ export default function UserList() {
     }
   };
 
-  if (isLoading) return <div className="p-4">Carregando usuários...</div>;
+  if (isLoading) return <PageLoader label="Carregando usuários…" />;
 
   return (
     <div className="p-4 pb-20 space-y-4">
@@ -61,7 +62,7 @@ export default function UserList() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
-        <h1 className="text-xl font-bold">Usuários</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Usuários</h1>
         <Button
           onClick={() => navigate("/admin/users/new")}
           data-testid="user-new"

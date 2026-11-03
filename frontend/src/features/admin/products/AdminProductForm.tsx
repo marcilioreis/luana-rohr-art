@@ -150,7 +150,7 @@ export default function AdminProductForm({ product }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4 pb-20">
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-2xl font-medium tracking-tight">
         {isEditing ? "Editar produto" : "Novo produto"}
       </h1>
 

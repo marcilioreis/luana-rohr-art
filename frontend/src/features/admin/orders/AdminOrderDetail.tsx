@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { toast } from "sonner";
+import PageLoader from "@/components/common/PageLoader";
 import {
   useGetOrderQuery,
   useUpdateOrderStatusMutation,
@@ -34,8 +35,7 @@ export default function AdminOrderDetail() {
   const [confirmPayment, { isLoading: confirming }] =
     useConfirmPaymentMutation();
 
-  if (isLoading)
-    return <div className="p-6 text-muted-foreground">Carregando...</div>;
+  if (isLoading) return <PageLoader label="Carregando o pedido…" />;
   if (!order) return <div className="p-6">Pedido não encontrado.</div>;
 
   const transition = async (status: OrderStatus) => {
@@ -66,7 +66,9 @@ export default function AdminOrderDetail() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{order.orderNumber}</h1>
+          <h1 className="text-2xl font-medium tracking-tight">
+            {order.orderNumber}
+          </h1>
           <p className="text-sm text-muted-foreground">
             Criado em {formatDateTime(order.createdAt)}
           </p>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import PageLoader from "@/components/common/PageLoader";
 import {
   useGetAdminProductsQuery,
   useDeleteProductMutation,
@@ -44,12 +45,12 @@ export default function AdminProductList() {
     }
   };
 
-  if (isLoading) return <div className="p-4">Carregando produtos...</div>;
+  if (isLoading) return <PageLoader label="Carregando produtos…" />;
 
   return (
     <div className="space-y-4 p-4 pb-20">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Produtos</h1>
+        <h1 className="text-2xl font-medium tracking-tight">Produtos</h1>
         <Button
           onClick={() => navigate("/admin/produtos/novo")}
           data-testid="product-new"

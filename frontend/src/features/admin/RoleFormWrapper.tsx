@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useGetRoleByIdQuery } from "./adminApi";
 import RoleForm from "./RoleForm";
+import PageLoader from "@/components/common/PageLoader";
 
 export default function RoleFormWrapper() {
   const { id } = useParams<{ id: string }>();
@@ -10,7 +11,7 @@ export default function RoleFormWrapper() {
   });
 
   if (isEditing && isLoading) {
-    return <div className="p-4">Carregando role...</div>;
+    return <PageLoader label="Carregando permissão…" />;
   }
 
   return <RoleForm key={id ?? "new"} initialRole={role} />;

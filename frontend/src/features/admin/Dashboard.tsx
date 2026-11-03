@@ -17,19 +17,29 @@ function StatsCard({
   label,
   value,
   icon: Icon,
+  accent = "muted",
 }: {
   label: string;
   value: string;
   icon: React.ElementType;
+  accent?: "blue" | "red" | "muted";
 }) {
+  const iconColor =
+    accent === "blue"
+      ? "text-primary"
+      : accent === "red"
+        ? "text-brand-red"
+        : "text-muted-foreground";
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{label}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {label}
+        </CardTitle>
+        <Icon className={`h-4 w-4 ${iconColor}`} />
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-bold">{value}</p>
+        <p className="font-heading text-3xl font-medium">{value}</p>
       </CardContent>
     </Card>
   );
@@ -52,7 +62,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Painel</h1>
+        <h1 className="text-3xl font-medium tracking-tight">Painel</h1>
         <Link
           to="/admin/relatorios"
           className="text-sm text-muted-foreground hover:text-primary"
@@ -62,11 +72,17 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatsCard label="Pedidos" value={String(total)} icon={ShoppingBag} />
+        <StatsCard
+          label="Pedidos"
+          value={String(total)}
+          icon={ShoppingBag}
+          accent="blue"
+        />
         <StatsCard
           label="Faturamento"
           value={formatBRL(revenue)}
           icon={DollarSign}
+          accent="red"
         />
         <StatsCard
           label="Aguardando pagamento"
