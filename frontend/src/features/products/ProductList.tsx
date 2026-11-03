@@ -1,23 +1,52 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useGetProductsQuery } from "./productsApi";
 import ProductCard from "./ProductCard";
+import {
+  COLLECTIONS,
+  getCollection,
+  productMatchesCollection,
+} from "../home/collections";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
+import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 
 export default function ProductList() {
+  const [params, setParams] = useSearchParams();
+  const colecao = params.get("colecao");
+  const collection = getCollection(colecao);
+
   const [search, setSearch] = useState("");
   const { data: products, isLoading } = useGetProductsQuery(
     search ? { search } : undefined,
   );
 
+  const visible = useMemo(() => {
+    if (!products) return [];
+    if (!collection) return products;
+    return products.filter((p) => productMatchesCollection(p, collection));
+  }, [products, collection]);
+
+  const setColecao = (slug: string | null) => {
+    const next = new URLSearchParams(params);
+    if (slug) next.set("colecao", slug);
+    else next.delete("colecao");
+    setParams(next);
+  };
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Loja</h1>
-          <p className="text-muted-foreground">
-            Camisetas com arte exclusiva de Luana Rohr
+          <h1 className="text-3xl font-medium tracking-tight">
+            {collection ? collection.title : "Loja"}
+          </h1>
+          <p className="mt-1 text-muted-foreground">
+            {collection
+              ? collection.subtitle
+              : "Camisetas com arte exclusiva de Luana Rohr"}
           </p>
         </div>
         <div className="relative w-full sm:w-72">
@@ -32,8 +61,25 @@ export default function ProductList() {
         </div>
       </div>
 
+      {/* Chips de coleção */}
+      <div className="mb-8 flex flex-wrap gap-2">
+        <Chip active={!colecao} onClick={() => setColecao(null)}>
+          Todas
+        </Chip>
+        {COLLECTIONS.map((c) => (
+          <Chip
+            key={c.slug}
+            active={colecao === c.slug}
+            accent={c.accent}
+            onClick={() => setColecao(c.slug)}
+          >
+            {c.title}
+          </Chip>
+        ))}
+      </div>
+
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
           {[...Array(8)].map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-[3/4] w-full rounded-lg" />
@@ -42,20 +88,63 @@ export default function ProductList() {
             </div>
           ))}
         </div>
-      ) : products && products.length > 0 ? (
+      ) : visible.length > 0 ? (
         <div
-          className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4"
+          className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4"
           data-testid="product-grid"
         >
-          {products.map((p) => (
+          {visible.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
       ) : (
-        <p className="py-16 text-center text-muted-foreground">
-          Nenhuma camiseta encontrada.
-        </p>
+        <div className="py-20 text-center">
+          <p className="text-muted-foreground">
+            {collection
+              ? "Ainda não há peças nesta coleção."
+              : "Nenhuma camiseta encontrada."}
+          </p>
+          {collection && (
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => setColecao(null)}
+            >
+              Ver todas as camisetas
+            </Button>
+          )}
+        </div>
       )}
     </div>
+  );
+}
+
+function Chip({
+  active,
+  accent = "blue",
+  onClick,
+  children,
+}: {
+  active: boolean;
+  accent?: "blue" | "red";
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+        active
+          ? accent === "red"
+            ? "border-brand-red bg-brand-red text-white"
+            : "border-primary bg-primary text-primary-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+      )}
+    >
+      {children}
+    </button>
   );
 }

@@ -12,7 +12,8 @@ test.describe('Loja pública', () => {
 
   test('página Sobre carrega', async ({ page }) => {
     await page.goto('/sobre');
-    await expect(page.getByRole('heading', { name: /Sobre a artista/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Luana Rohr', level: 1 })).toBeVisible();
+    await expect(page.getByText(/política cultural/i)).toBeVisible();
   });
 
   test('PLP lista produtos e abre a PDP', async ({ page }) => {

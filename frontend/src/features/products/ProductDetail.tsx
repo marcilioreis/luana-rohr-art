@@ -140,13 +140,18 @@ export default function ProductDetail() {
           <p className="mt-2 text-2xl font-semibold text-brand-red">
             {formatBRL(price)}
           </p>
-          {product.description && (
-            <p className="mt-4 text-muted-foreground">{product.description}</p>
-          )}
           {product.tags && product.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {product.tags.map((t) => (
-                <Badge key={t} variant="secondary">
+                <Badge
+                  key={t}
+                  variant="secondary"
+                  className={
+                    /limit/i.test(t)
+                      ? "border-brand-red/30 bg-brand-red/10 text-brand-red"
+                      : undefined
+                  }
+                >
                   {t}
                 </Badge>
               ))}
@@ -210,9 +215,22 @@ export default function ProductDetail() {
                 {selectedVariant.stock} em estoque
               </p>
             )}
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              PIX à vista · entrega pelos Correios ou retirada combinada
+            </p>
           </div>
         </div>
       </div>
+
+      {/* A obra — narrativa da estampa */}
+      {product.description && (
+        <section className="mx-auto mt-14 max-w-3xl border-t pt-10">
+          <h2 className="font-heading text-xl">A obra</h2>
+          <p className="mt-3 leading-relaxed text-muted-foreground">
+            {product.description}
+          </p>
+        </section>
+      )}
     </div>
   );
 }
