@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "sonner";
 import { useGetOrderQuery } from "./ordersApi";
+import { DELIVERY_METHOD_LABELS, PICKUP_NOTICE } from "./orders.types";
 import OrderStatusBadge from "./OrderStatusBadge";
 import { formatBRL, formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
@@ -131,23 +132,29 @@ export default function OrderDetail() {
       </Card>
 
       {/* Entrega */}
-      {addr && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">Entrega</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p>
-              {addr.street}, {addr.number}
-              {addr.complement ? ` — ${addr.complement}` : ""}
-            </p>
-            <p>
-              {addr.district} — {addr.city}/{addr.state}
-            </p>
-            <p>CEP {addr.cep}</p>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">
+            {DELIVERY_METHOD_LABELS[order.deliveryMethod]}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          {order.deliveryMethod === "retirada" ? (
+            <p>{PICKUP_NOTICE}</p>
+          ) : addr ? (
+            <>
+              <p>
+                {addr.street}, {addr.number}
+                {addr.complement ? ` — ${addr.complement}` : ""}
+              </p>
+              <p>
+                {addr.district} — {addr.city}/{addr.state}
+              </p>
+              <p>CEP {addr.cep}</p>
+            </>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   );
 }

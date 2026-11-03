@@ -1,5 +1,5 @@
 // src/shared/db/schema/views.types.ts
-import type { OrderStatus } from './orders.js';
+import type { OrderStatus, DeliveryMethod } from './orders.js';
 
 // Formato retornado pela view orders_enriched (campos derivados + itens agregados).
 export type OrderEnriched = {
@@ -8,11 +8,14 @@ export type OrderEnriched = {
   customerId: string | null;
   status: OrderStatus;
   statusLabel: string;
+  deliveryMethod: DeliveryMethod;
   subtotal: number;
   shippingFee: number;
   total: number;
   pixPayload: string | null;
   pixTxid: string | null;
+  // Não vem da view orders_enriched; anexado no caminho de criação/track (convidado).
+  accessToken?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;

@@ -1,6 +1,8 @@
 export type OrderStatus =
   "aguardando_pagamento" | "pago" | "enviado" | "entregue" | "cancelado";
 
+export type DeliveryMethod = "entrega" | "retirada";
+
 export interface OrderItem {
   id: number;
   productId: number | null;
@@ -28,11 +30,14 @@ export interface Order {
   customerId: string | null;
   status: OrderStatus;
   statusLabel: string;
+  deliveryMethod: DeliveryMethod;
   subtotal: number;
   shippingFee: number;
   total: number;
   pixPayload: string | null;
   pixTxid: string | null;
+  // Presente no retorno de criação e no track público (convidado); ausente nas listagens.
+  accessToken?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
@@ -50,7 +55,9 @@ export interface Order {
 export interface CheckoutPayload {
   items: Array<{ variantId: number; quantity: number }>;
   customer: { name: string; email: string; phone?: string };
-  shippingAddress: ShippingAddress;
+  deliveryMethod: DeliveryMethod;
+  // Obrigatório para "entrega"; omitido para "retirada".
+  shippingAddress?: ShippingAddress;
   shippingFee?: number;
   notes?: string;
 }
@@ -62,3 +69,12 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   entregue: "Entregue",
   cancelado: "Cancelado",
 };
+
+export const DELIVERY_METHOD_LABELS: Record<DeliveryMethod, string> = {
+  entrega: "Entrega",
+  retirada: "Retirada (sem custo)",
+};
+
+// Aviso exibido para a modalidade de retirada.
+export const PICKUP_NOTICE =
+  "A retirada é sem custo e deve ser agendada com antecedência — entraremos em contato para combinar data e horário.";

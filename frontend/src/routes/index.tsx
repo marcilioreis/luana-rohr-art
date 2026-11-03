@@ -24,6 +24,9 @@ const ProductDetail = lazyPage(
 const CheckoutPage = lazyPage(
   () => import("../features/checkout/CheckoutPage"),
 );
+const OrderConfirmation = lazyPage(
+  () => import("../features/checkout/OrderConfirmation"),
+);
 
 // Conta do cliente
 const MyOrders = lazyPage(() => import("../features/account/MyOrders"));
@@ -74,6 +77,7 @@ export const router = createBrowserRouter([
           { path: "/produto/:slug", element: ProductDetail },
           { path: "/sobre", element: AboutPage },
           { path: "/checkout", element: CheckoutPage },
+          { path: "/pedido/:token", element: OrderConfirmation },
           // Área do cliente (protegida)
           {
             element: <ProtectedRoute />,

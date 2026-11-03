@@ -1,9 +1,12 @@
 // src/modules/orders/orders.routes.ts
 import { Router } from 'express';
-import { authenticate } from '../../shared/auth/middleware.js';
+import rateLimit from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
+import { authenticate, optionalAuthenticate } from '../../shared/auth/middleware.js';
 import { loadPermissions } from '../../shared/middleware/loadPermissions.js';
 import { authorize } from '../../shared/middleware/rbac.js';
 import { validateBody } from '../../shared/middleware/validate.js';
+import { redis } from '../../shared/redis/index.js';
 import {
   createOrderSchema,
   updateOrderStatusSchema,
@@ -13,22 +16,72 @@ import * as controller from './orders.controller.js';
 
 const router = Router();
 
-// Todas as rotas de pedido exigem autenticação + permissões carregadas
-router.use(authenticate, loadPermissions);
+// Limiter estrito só no checkout (POST /): cada pedido faz baixa de estoque real, então
+// mitiga esgotamento por script anônimo. Fail-open se o Redis falhar (como o apiLimiter).
+const checkoutLimiter = rateLimit({
+  store: new RedisStore({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sendCommand: (...args: any[]) => redis.call(args[0], ...args.slice(1)),
+    prefix: 'rl:checkout:',
+  }),
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Muitas tentativas de checkout, tente novamente em instantes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  passOnStoreError: true,
+});
 
-// ---------- Cliente autenticado ----------
+// ---------- Públicas (checkout de convidado) ----------
 /**
  * @openapi
  * /api/orders:
  *   post:
- *     summary: Criar pedido (checkout) — gera PIX e retorna o payload
+ *     summary: Criar pedido (checkout) — gera PIX e retorna o payload. Aceita convidado.
  *     tags: [Pedidos]
- *     security: [{ cookieAuth: [] }]
  *     responses:
  *       201: { description: Pedido criado (aguardando pagamento) }
  *       409: { description: Estoque insuficiente }
  */
-router.post('/', validateBody(createOrderSchema), controller.createOrder);
+router.post(
+  '/',
+  checkoutLimiter,
+  optionalAuthenticate,
+  validateBody(createOrderSchema),
+  controller.createOrder
+);
+
+/**
+ * @openapi
+ * /api/orders/track/{token}:
+ *   get:
+ *     summary: Acompanhar pedido por token de acesso público (convidado)
+ *     tags: [Pedidos]
+ *     responses:
+ *       200: { description: Pedido encontrado (inclui PIX e status) }
+ *       404: { description: Pedido não encontrado }
+ */
+router.get('/track/:token', controller.trackOrder);
+
+/**
+ * @openapi
+ * /api/orders/shipping-quote:
+ *   get:
+ *     summary: Cotação de frete por UF (pública) — usada pelo checkout
+ *     tags: [Pedidos]
+ *     parameters:
+ *       - in: query
+ *         name: uf
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Cotação de frete }
+ *       400: { description: UF inválida }
+ */
+router.get('/shipping-quote', controller.getShippingQuote);
+
+// Daqui pra baixo, exige autenticação + permissões carregadas
+router.use(authenticate, loadPermissions);
 
 /**
  * @openapi

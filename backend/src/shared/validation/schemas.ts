@@ -75,17 +75,24 @@ export const checkoutItemSchema = z.object({
   quantity: z.number().int().positive('Quantidade deve ser positiva'),
 });
 
-export const createOrderSchema = z.object({
-  items: z.array(checkoutItemSchema).nonempty('O carrinho não pode estar vazio'),
-  customer: z.object({
-    name: z.string().min(1, 'Nome é obrigatório'),
-    email: z.email('E-mail inválido'),
-    phone: z.string().optional(),
-  }),
-  shippingAddress: addressSchema,
-  shippingFee: z.number().min(0).optional().default(0),
-  notes: z.string().optional(),
-});
+export const createOrderSchema = z
+  .object({
+    items: z.array(checkoutItemSchema).nonempty('O carrinho não pode estar vazio'),
+    customer: z.object({
+      name: z.string().min(1, 'Nome é obrigatório'),
+      email: z.email('E-mail inválido'),
+      phone: z.string().optional(),
+    }),
+    // Modalidade de entrega: entrega exige endereço; retirada dispensa (sem custo).
+    deliveryMethod: z.enum(['entrega', 'retirada']).optional().default('entrega'),
+    shippingAddress: addressSchema.optional(),
+    shippingFee: z.number().min(0).optional().default(0),
+    notes: z.string().optional(),
+  })
+  .refine((data) => data.deliveryMethod === 'retirada' || data.shippingAddress != null, {
+    message: 'Endereço de entrega é obrigatório',
+    path: ['shippingAddress'],
+  });
 
 export const updateOrderStatusSchema = z.object({
   status: z.enum(ORDER_STATUSES),

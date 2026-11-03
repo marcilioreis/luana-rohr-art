@@ -8,6 +8,20 @@
       "when": 1793395304470,
       "tag": "0000_init_store",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793716461139,
+      "tag": "0001_guest_order_access_token",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793721123651,
+      "tag": "0002_order_delivery_method",
+      "breakpoints": true
     }
   ]
 }

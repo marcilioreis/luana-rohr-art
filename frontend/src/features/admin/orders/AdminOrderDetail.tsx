@@ -6,7 +6,11 @@ import {
   useConfirmPaymentMutation,
 } from "../../account/ordersApi";
 import type { OrderStatus } from "../../account/orders.types";
-import { ORDER_STATUS_LABELS } from "../../account/orders.types";
+import {
+  ORDER_STATUS_LABELS,
+  DELIVERY_METHOD_LABELS,
+  PICKUP_NOTICE,
+} from "../../account/orders.types";
 import OrderStatusBadge from "../../account/OrderStatusBadge";
 import { formatBRL, formatDateTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
@@ -111,13 +115,18 @@ export default function AdminOrderDetail() {
           {order.customerPhone && (
             <p className="text-muted-foreground">{order.customerPhone}</p>
           )}
-          {addr && (
-            <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 font-medium text-foreground">
+            {DELIVERY_METHOD_LABELS[order.deliveryMethod]}
+          </p>
+          {order.deliveryMethod === "retirada" ? (
+            <p className="text-muted-foreground">{PICKUP_NOTICE}</p>
+          ) : addr ? (
+            <p className="text-muted-foreground">
               {addr.street}, {addr.number}
               {addr.complement ? ` — ${addr.complement}` : ""} · {addr.district}{" "}
               · {addr.city}/{addr.state} · CEP {addr.cep}
             </p>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 

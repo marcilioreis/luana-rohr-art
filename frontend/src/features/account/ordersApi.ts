@@ -7,6 +7,12 @@ export interface ExportStatus {
   downloadLink: string | null;
 }
 
+export interface ShippingQuote {
+  uf: string;
+  region: "norte" | "nordeste" | "centro_oeste" | "sudeste" | "sul" | null;
+  fee: number;
+}
+
 export const ordersApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // ---- Cliente ----
@@ -21,6 +27,15 @@ export const ordersApi = api.injectEndpoints({
     getOrder: builder.query<Order, number>({
       query: (id) => `/orders/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Order", id }],
+    }),
+    // Acesso público por token (checkout de convidado — reabre pedido/PIX)
+    getOrderByToken: builder.query<Order, string>({
+      query: (token) => `/orders/track/${token}`,
+      providesTags: (_r, _e, token) => [{ type: "Order", id: token }],
+    }),
+    // Cotação de frete por UF (pública) — usada no checkout
+    getShippingQuote: builder.query<ShippingQuote, string>({
+      query: (uf) => `/orders/shipping-quote?uf=${uf}`,
     }),
 
     // ---- Admin ----
@@ -72,6 +87,8 @@ export const {
   useCreateOrderMutation,
   useGetMyOrdersQuery,
   useGetOrderQuery,
+  useGetOrderByTokenQuery,
+  useLazyGetShippingQuoteQuery,
   useGetAdminOrdersQuery,
   useUpdateOrderStatusMutation,
   useConfirmPaymentMutation,

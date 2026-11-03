@@ -24,18 +24,27 @@ export const ORDER_STATUSES = [
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+// Modalidade de entrega: entrega (frete por UF) ou retirada (sem custo, agendada).
+export const DELIVERY_METHODS = ['entrega', 'retirada'] as const;
+export type DeliveryMethod = (typeof DELIVERY_METHODS)[number];
+
 export const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
   orderNumber: varchar('order_number', { length: 30 }).unique().notNull(),
-  // Cliente autenticado (nullable permite checkout de convidado no futuro)
+  // Cliente autenticado (nullable: checkout de convidado grava null e usa access_token)
   customerId: text('customer_id').references(() => user.id, { onDelete: 'set null' }),
   status: varchar('status', { length: 30 }).default('aguardando_pagamento').notNull(),
+  // Modalidade de entrega: 'entrega' (padrão) ou 'retirada' (sem custo, agendada).
+  deliveryMethod: varchar('delivery_method', { length: 20 }).default('entrega').notNull(),
   subtotal: doublePrecision('subtotal').notNull(),
   shippingFee: doublePrecision('shipping_fee').default(0).notNull(),
   total: doublePrecision('total').notNull(),
   // PIX "copia e cola" (payload EMV) + txid
   pixPayload: text('pix_payload'),
   pixTxid: varchar('pix_txid', { length: 40 }),
+  // Token de acesso público para checkout de convidado (reabre pedido/PIX via /pedido/:token).
+  // Nullable: pedidos de usuários logados usam /mine, não precisam de token.
+  accessToken: text('access_token').unique(),
   // Snapshot dos dados do cliente no momento da compra
   customerName: varchar('customer_name', { length: 150 }).notNull(),
   customerEmail: varchar('customer_email', { length: 150 }).notNull(),

@@ -6,10 +6,29 @@ import type { Order } from "../account/orders.types";
 import { formatBRL } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, Check, CheckCircle2 } from "lucide-react";
+import { Copy, Check, CheckCircle2, Link2, Truck, Store } from "lucide-react";
+import { useAppSelector } from "@/app/hooks";
+import { DELIVERY_METHOD_LABELS, PICKUP_NOTICE } from "../account/orders.types";
 
 export default function PixPayment({ order }: { order: Order }) {
   const [copied, setCopied] = useState(false);
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
+  const trackUrl = order.accessToken
+    ? `${window.location.origin}/pedido/${order.accessToken}`
+    : null;
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const copyTrackLink = async () => {
+    if (!trackUrl) return;
+    try {
+      await navigator.clipboard.writeText(trackUrl);
+      setLinkCopied(true);
+      toast.success("Link copiado!");
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar.");
+    }
+  };
 
   const copyPix = async () => {
     if (!order.pixPayload) return;
@@ -89,14 +108,66 @@ export default function PixPayment({ order }: { order: Order }) {
               </li>
             </ol>
           </div>
+
+          <div className="rounded-md border p-3 text-xs">
+            <p className="flex items-center gap-2 font-medium text-foreground">
+              {order.deliveryMethod === "retirada" ? (
+                <Store className="h-4 w-4" />
+              ) : (
+                <Truck className="h-4 w-4" />
+              )}
+              {DELIVERY_METHOD_LABELS[order.deliveryMethod]}
+            </p>
+            {order.deliveryMethod === "retirada" && (
+              <p
+                className="mt-1 text-muted-foreground"
+                data-testid="pickup-notice"
+              >
+                {PICKUP_NOTICE}
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      <div className="mt-6 text-center">
-        <Button asChild>
-          <Link to="/conta/pedidos">Ver meus pedidos</Link>
-        </Button>
-      </div>
+      {isAuthenticated ? (
+        <div className="mt-6 text-center">
+          <Button asChild>
+            <Link to="/conta/pedidos">Ver meus pedidos</Link>
+          </Button>
+        </div>
+      ) : trackUrl ? (
+        <div className="mt-6 space-y-2 rounded-md border bg-accent/30 p-4 text-sm">
+          <p className="flex items-center gap-2 font-medium text-foreground">
+            <Link2 className="h-4 w-4" /> Salve este link para acompanhar seu
+            pedido
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Você não está logada. Guarde o endereço abaixo para reabrir este
+            pedido e o PIX quando quiser.
+          </p>
+          <div className="flex gap-2">
+            <input
+              readOnly
+              value={trackUrl}
+              className="flex-1 rounded-md border bg-muted/40 p-2 text-xs"
+              data-testid="track-link"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyTrackLink}
+              data-testid="copy-track-link"
+            >
+              {linkCopied ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

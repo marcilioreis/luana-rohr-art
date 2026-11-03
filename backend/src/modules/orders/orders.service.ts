@@ -1,11 +1,13 @@
 // src/modules/orders/orders.service.ts
+import { randomBytes } from 'crypto';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { db } from '../../shared/db/index.js';
 import { orders, orderItems, ORDER_STATUSES } from '../../shared/db/schema/orders.js';
-import type { OrderStatus } from '../../shared/db/schema/orders.js';
+import type { OrderStatus, DeliveryMethod } from '../../shared/db/schema/orders.js';
 import { products, productVariants } from '../../shared/db/schema/products.js';
 import type { OrderEnriched } from '../../shared/db/schema/views.types.js';
 import { buildOrderPix } from '../../shared/pix/pix.js';
+import { getShippingFee } from '../../shared/shipping/shipping.js';
 
 // ---- Mapeamento da view orders_enriched (top-level snake_case → camelCase) ----
 const mapRow = (row: Record<string, unknown>): OrderEnriched => ({
@@ -14,6 +16,7 @@ const mapRow = (row: Record<string, unknown>): OrderEnriched => ({
   customerId: (row.customer_id as string | null) ?? null,
   status: row.status as OrderStatus,
   statusLabel: row.status_label as string,
+  deliveryMethod: (row.delivery_method as DeliveryMethod) ?? 'entrega',
   subtotal: Number(row.subtotal),
   shippingFee: Number(row.shipping_fee),
   total: Number(row.total),
@@ -62,20 +65,41 @@ export interface CheckoutItem {
   variantId: number;
   quantity: number;
 }
+export interface CheckoutAddress {
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  district: string;
+  city: string;
+  state: string;
+}
 export interface CheckoutPayload {
   items: CheckoutItem[];
   customer: { name: string; email: string; phone?: string };
-  shippingAddress: unknown;
+  deliveryMethod?: DeliveryMethod;
+  // Obrigatório para 'entrega'; ignorado/omitido para 'retirada'.
+  shippingAddress?: CheckoutAddress;
+  // Ignorado — o frete é calculado no servidor a partir da UF (server-authoritative).
   shippingFee?: number;
   notes?: string;
 }
 
 // ========== CRIAR PEDIDO (checkout) ==========
 export const createOrder = async (customerId: string | null, payload: CheckoutPayload) => {
-  const shippingFee = payload.shippingFee ?? 0;
+  const deliveryMethod: DeliveryMethod = payload.deliveryMethod ?? 'entrega';
+  const isPickup = deliveryMethod === 'retirada';
+  // Retirada é sem custo; entrega tem frete autoritativo pelo servidor (UF do endereço),
+  // nunca confiando no valor do cliente. Na retirada não guardamos endereço de entrega.
+  const shippingAddress = isPickup ? null : (payload.shippingAddress ?? null);
+  const shippingFee =
+    isPickup || !payload.shippingAddress ? 0 : getShippingFee(payload.shippingAddress.state);
 
   const orderNumber = generateOrderNumber();
   const pixTxid = orderNumber.replace(/[^A-Za-z0-9]/g, '').slice(0, 25);
+  // Token de acesso público só para convidado (reabre o pedido/PIX via /pedido/:token).
+  // Usuário logado acompanha por /mine, então não recebe token (menor superfície de ataque).
+  const accessToken = customerId ? null : randomBytes(24).toString('base64url');
 
   const created = await db.transaction(async (tx) => {
     let subtotal = 0;
@@ -135,15 +159,17 @@ export const createOrder = async (customerId: string | null, payload: CheckoutPa
         orderNumber,
         customerId,
         status: 'aguardando_pagamento',
+        deliveryMethod,
         subtotal,
         shippingFee,
         total,
         pixPayload,
         pixTxid,
+        accessToken,
         customerName: payload.customer.name,
         customerEmail: payload.customer.email,
         customerPhone: payload.customer.phone,
-        shippingAddress: payload.shippingAddress,
+        shippingAddress,
         notes: payload.notes,
       })
       .returning();
@@ -153,7 +179,21 @@ export const createOrder = async (customerId: string | null, payload: CheckoutPa
     return order;
   });
 
-  return findByIdEnriched(created.id);
+  // A view orders_enriched NÃO expõe access_token; anexa-o ao objeto enriquecido
+  // para que o frontend possa redirecionar o convidado para /pedido/:token.
+  const enriched = await findByIdEnriched(created.id);
+  return enriched ? { ...enriched, accessToken: created.accessToken } : enriched;
+};
+
+// Busca pedido pelo token de acesso público (convidado). Reusa a view enriquecida.
+export const findByAccessToken = async (token: string): Promise<OrderEnriched | null> => {
+  const [row] = await db
+    .select({ id: orders.id, accessToken: orders.accessToken })
+    .from(orders)
+    .where(eq(orders.accessToken, token));
+  if (!row) return null;
+  const enriched = await findByIdEnriched(row.id);
+  return enriched ? { ...enriched, accessToken: row.accessToken } : enriched;
 };
 
 // ========== TRANSIÇÃO DE STATUS ==========
@@ -236,6 +276,7 @@ export const getExportData = async (filters: {
   return rows.map((o) => ({
     numero: o.orderNumber,
     status: o.status,
+    modalidade: o.deliveryMethod,
     cliente: o.customerName,
     email: o.customerEmail,
     telefone: o.customerPhone ?? '',

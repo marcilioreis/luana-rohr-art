@@ -9,28 +9,41 @@ import { exportQueue } from '../../shared/queue/export.queue.js';
 import { storage } from '../../shared/storage/storage.js';
 import { db } from '../../shared/db/index.js';
 import { auditLogs } from '../../shared/db/schema/audit.js';
+import { quoteShipping, getRegionForUf } from '../../shared/shipping/shipping.js';
 
 const getNumericId = (param: string | string[]): number => {
   const id = Array.isArray(param) ? param[0] : param;
   return parseInt(id, 10);
 };
 
+const getStringParam = (param: string | string[]): string =>
+  Array.isArray(param) ? param[0] : param;
+
+// Formato do accessToken: randomBytes(24).toString('base64url') → 32 chars [A-Za-z0-9_-]
+const ACCESS_TOKEN_RE = /^[A-Za-z0-9_-]{32}$/;
+
 // ========== CLIENTE ==========
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const customerId = req.user!.id;
+    const customerId = req.user?.id ?? null;
     const order = await orderService.createOrder(customerId, req.body);
     res.status(201).json(order);
 
+    // Auditoria best-effort APÓS a resposta: uma falha aqui não pode disparar o catch
+    // (o pedido já foi criado e respondido — evita "headers already sent").
     if (order) {
-      await db.insert(auditLogs).values({
-        userId: customerId,
-        action: 'order.create',
-        entityType: 'order',
-        entityId: order.id,
-        details: { orderNumber: order.orderNumber, total: order.total },
-        ip: req.ip,
-      });
+      try {
+        await db.insert(auditLogs).values({
+          userId: customerId,
+          action: 'order.create',
+          entityType: 'order',
+          entityId: order.id,
+          details: { orderNumber: order.orderNumber, total: order.total },
+          ip: req.ip,
+        });
+      } catch (auditError) {
+        console.error('Audit log (order.create) error:', auditError);
+      }
     }
   } catch (error: unknown) {
     console.error('Create order error:', error);
@@ -65,6 +78,37 @@ export const getMyOrder = async (req: Request, res: Response) => {
     res.json(order);
   } catch (error) {
     console.error('Get order error:', error);
+    res.status(500).json({ error: 'Falha ao obter pedido' });
+  }
+};
+
+// ========== FRETE (cotação pública por UF) ==========
+export const getShippingQuote = async (req: Request, res: Response) => {
+  const ufRaw = req.query.uf;
+  const uf = typeof ufRaw === 'string' ? ufRaw.toUpperCase() : '';
+  if (!/^[A-Z]{2}$/.test(uf) || !getRegionForUf(uf)) {
+    return res.status(400).json({ error: 'UF inválida' });
+  }
+  res.json(quoteShipping(uf));
+};
+
+// ========== CONVIDADO (acesso por token público) ==========
+export const trackOrder = async (req: Request, res: Response) => {
+  try {
+    const token = getStringParam(req.params.token);
+    // Rejeita tokens malformados antes de consultar o banco (não revela o motivo: 404).
+    if (!ACCESS_TOKEN_RE.test(token)) {
+      return res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+    const order = await orderService.findByAccessToken(token);
+    if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
+    // Sem checagem de posse: o token É a credencial. Como só convidados recebem token,
+    // customerId já é null aqui; anula por garantia para nunca expor o id interno do usuário.
+    // Mantém accessToken (o chamador já o tem na URL). Resposta com PII + PIX: não cacheável.
+    res.set('Cache-Control', 'no-store');
+    res.json({ ...order, customerId: null });
+  } catch (error) {
+    console.error('Track order error:', error);
     res.status(500).json({ error: 'Falha ao obter pedido' });
   }
 };
