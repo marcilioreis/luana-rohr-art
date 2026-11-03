@@ -110,6 +110,23 @@ VITE_API_URL=http://localhost:3000
 
 ---
 
+## Atalho: `setup.sh` (automatiza os passos 3–6)
+
+Depois de criar os `.env` (seção 2), dá para rodar tudo de uma vez:
+
+```bash
+./setup.sh              # containers + deps + migrate + seed + sobe os servidores
+./setup.sh --no-run     # só prepara (3–5), sem subir os servidores
+./setup.sh --with-tests # instala também as deps de tests/ (E2E)
+./setup.sh --reset-db   # recria o Postgres do zero (APAGA os dados) + resseed
+./setup.sh --help
+```
+
+O script é idempotente (reaproveita containers existentes, seed sem duplicar). As
+seções abaixo descrevem os mesmos passos manualmente, caso prefira.
+
+---
+
 ## 3. Banco de dados + Redis (containers isolados)
 
 Cria os containers nas **mesmas portas** que o `.env` espera (5433 / 6380). Não use
