@@ -43,9 +43,13 @@ class LocalProvider implements StorageProvider {
 class S3Provider implements StorageProvider {
   private client: S3Client;
   private bucket: string;
+  private publicUrl?: string;
 
   constructor() {
     this.bucket = process.env.STORAGE_BUCKET!;
+    // Domínio público do bucket (R2 public bucket ou domínio custom), sem barra no fim.
+    // O endpoint da API S3 não serve conteúdo público, então usamos esta base dedicada.
+    this.publicUrl = process.env.STORAGE_PUBLIC_URL?.replace(/\/+$/, '');
     this.client = new S3Client({
       region: process.env.STORAGE_REGION || 'auto',
       endpoint: `http${process.env.STORAGE_USE_SSL === 'true' ? 's' : ''}://${process.env.STORAGE_ENDPOINT}:${process.env.STORAGE_PORT}`,
@@ -66,7 +70,13 @@ class S3Provider implements StorageProvider {
         ContentType: mimeType,
       })
     );
-    return `${process.env.STORAGE_ENDPOINT?.replace('https://', 'https://')}/${this.bucket}/${fileName}`;
+    if (!this.publicUrl) {
+      throw new Error(
+        'STORAGE_PUBLIC_URL não configurado: habilite acesso público no bucket R2 e defina a env'
+      );
+    }
+    // Bucket público: a chave fica na raiz do domínio público (sem o nome do bucket).
+    return `${this.publicUrl}/${fileName}`;
   }
 
   async getSignedDownloadUrl(fileName: string, expiresIn = 3600): Promise<string> {

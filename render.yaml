@@ -61,10 +61,31 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
-      # local = disco efêmero (imagens enviadas/exports somem em redeploy).
-      # Troque para s3 + credenciais R2 para persistência (ver Passo 6 do HANDOVER).
+      # Storage de imagens/exports. local = disco efêmero (somem em redeploy).
+      # s3 = Cloudflare R2 (persistente). Como sync:false, o valor vem do dashboard
+      # e NÃO é revertido a cada deploy (ver Passo 6 do HANDOVER).
       - key: STORAGE_DRIVER
-        value: local
+        sync: false
+      # --- Credenciais/endpoint R2 (só usados quando STORAGE_DRIVER=s3) ---
+      # STORAGE_ENDPOINT = <account_id>.r2.cloudflarestorage.com (só o host, sem https://).
+      - key: STORAGE_ENDPOINT
+        sync: false
+      - key: STORAGE_PORT
+        value: '443'
+      - key: STORAGE_USE_SSL
+        value: 'true'
+      - key: STORAGE_REGION
+        value: auto
+      - key: STORAGE_BUCKET
+        sync: false
+      - key: STORAGE_ACCESS_KEY
+        sync: false
+      - key: STORAGE_SECRET_KEY
+        sync: false
+      # Domínio público do bucket (R2 public bucket ou domínio custom), com https://
+      # e sem barra no fim. Usado para montar a URL pública das imagens.
+      - key: STORAGE_PUBLIC_URL
+        sync: false
 
   # ---------------- Frontend (Static Site) ----------------
   - type: web
