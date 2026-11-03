@@ -13,6 +13,19 @@ import {
 import { user } from './auth.js';
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
+// ========== COLEÇÕES (temas curatoriais) ==========
+export const collections = pgTable('collections', {
+  id: serial('id').primaryKey(),
+  slug: varchar('slug', { length: 60 }).unique().notNull(),
+  title: varchar('title', { length: 120 }).notNull(),
+  subtitle: varchar('subtitle', { length: 200 }),
+  // Cor de acento no frontend: 'blue' | 'red'
+  accent: varchar('accent', { length: 10 }).default('blue').notNull(),
+  sortOrder: integer('sort_order').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
 // ========== PRODUTOS (camisetas) ==========
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
@@ -21,6 +34,10 @@ export const products = pgTable('products', {
   description: text('description'),
   basePrice: doublePrecision('base_price').notNull(),
   active: boolean('active').default(true).notNull(),
+  // Coleção curatorial (nullable: produto pode não pertencer a nenhuma)
+  collectionId: integer('collection_id').references(() => collections.id, {
+    onDelete: 'set null',
+  }),
   // Estilo visual / tags opcionais (ex.: coleção, material) em JSON
   customStyle: jsonb('custom_style'),
   tags: jsonb('tags'),
@@ -56,6 +73,8 @@ export const productImages = pgTable('product_images', {
 });
 
 // Tipos inferidos
+export type Collection = InferSelectModel<typeof collections>;
+export type InsertCollection = InferInsertModel<typeof collections>;
 export type Product = InferSelectModel<typeof products>;
 export type InsertProduct = InferInsertModel<typeof products>;
 export type ProductVariant = InferSelectModel<typeof productVariants>;

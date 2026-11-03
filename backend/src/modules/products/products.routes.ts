@@ -83,6 +83,17 @@ router.get('/', controller.listProducts);
 
 /**
  * @openapi
+ * /api/products/collections:
+ *   get:
+ *     summary: Listar coleções ativas (temas curatoriais)
+ *     tags: [Produtos]
+ *     responses:
+ *       200: { description: Lista de coleções }
+ */
+router.get('/collections', controller.listCollections);
+
+/**
+ * @openapi
  * /api/products/{slug}:
  *   get:
  *     summary: Obter um produto pelo slug (PDP)

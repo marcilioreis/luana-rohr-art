@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
-import { useGetProductsQuery } from "../products/productsApi";
+import {
+  useGetProductsQuery,
+  useGetCollectionsQuery,
+} from "../products/productsApi";
 import ProductCard from "../products/ProductCard";
-import { COLLECTIONS } from "./collections";
 import { Mandala } from "@/components/brand/Mandala";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
@@ -9,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   const { data: products, isLoading } = useGetProductsQuery();
+  const { data: collections = [] } = useGetCollectionsQuery();
   const highlights = products?.slice(0, 4) ?? [];
   const featured = highlights[0];
 
@@ -70,7 +73,7 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          {COLLECTIONS.map((c) => (
+          {collections.map((c) => (
             <Link
               key={c.slug}
               to={`/loja?colecao=${c.slug}`}

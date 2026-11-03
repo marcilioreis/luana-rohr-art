@@ -1,12 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useGetProductsQuery } from "./productsApi";
+import { useGetProductsQuery, useGetCollectionsQuery } from "./productsApi";
 import ProductCard from "./ProductCard";
-import {
-  COLLECTIONS,
-  getCollection,
-  productMatchesCollection,
-} from "../home/collections";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
@@ -16,18 +11,16 @@ import { Search } from "lucide-react";
 export default function ProductList() {
   const [params, setParams] = useSearchParams();
   const colecao = params.get("colecao");
-  const collection = getCollection(colecao);
-
   const [search, setSearch] = useState("");
-  const { data: products, isLoading } = useGetProductsQuery(
-    search ? { search } : undefined,
-  );
 
-  const visible = useMemo(() => {
-    if (!products) return [];
-    if (!collection) return products;
-    return products.filter((p) => productMatchesCollection(p, collection));
-  }, [products, collection]);
+  const { data: collections = [] } = useGetCollectionsQuery();
+  const collection = collections.find((c) => c.slug === colecao) ?? null;
+
+  // Filtro de coleção é feito no servidor (?collection=slug).
+  const { data: products = [], isLoading } = useGetProductsQuery({
+    search: search || undefined,
+    collection: colecao || undefined,
+  });
 
   const setColecao = (slug: string | null) => {
     const next = new URLSearchParams(params);
@@ -45,7 +38,7 @@ export default function ProductList() {
           </h1>
           <p className="mt-1 text-muted-foreground">
             {collection
-              ? collection.subtitle
+              ? (collection.subtitle ?? "")
               : "Camisetas com arte exclusiva de Luana Rohr"}
           </p>
         </div>
@@ -61,22 +54,24 @@ export default function ProductList() {
         </div>
       </div>
 
-      {/* Chips de coleção */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <Chip active={!colecao} onClick={() => setColecao(null)}>
-          Todas
-        </Chip>
-        {COLLECTIONS.map((c) => (
-          <Chip
-            key={c.slug}
-            active={colecao === c.slug}
-            accent={c.accent}
-            onClick={() => setColecao(c.slug)}
-          >
-            {c.title}
+      {/* Chips de coleção (dados reais) */}
+      {collections.length > 0 && (
+        <div className="mb-8 flex flex-wrap gap-2">
+          <Chip active={!colecao} onClick={() => setColecao(null)}>
+            Todas
           </Chip>
-        ))}
-      </div>
+          {collections.map((c) => (
+            <Chip
+              key={c.slug}
+              active={colecao === c.slug}
+              accent={c.accent}
+              onClick={() => setColecao(c.slug)}
+            >
+              {c.title}
+            </Chip>
+          ))}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
@@ -88,12 +83,12 @@ export default function ProductList() {
             </div>
           ))}
         </div>
-      ) : visible.length > 0 ? (
+      ) : products.length > 0 ? (
         <div
           className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4"
           data-testid="product-grid"
         >
-          {visible.map((p) => (
+          {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>

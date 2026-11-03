@@ -8,6 +8,7 @@ import {
   useDeleteVariantMutation,
   useUploadImageMutation,
   useDeleteImageMutation,
+  useGetCollectionsQuery,
 } from "../../products/productsApi";
 import type {
   AdminProduct,
@@ -43,10 +44,15 @@ export default function AdminProductForm({ product }: Props) {
   const [uploadImage] = useUploadImageMutation();
   const [deleteImage] = useDeleteImageMutation();
 
+  const { data: collections = [] } = useGetCollectionsQuery();
+
   const [name, setName] = useState(product?.name ?? "");
   const [basePrice, setBasePrice] = useState(String(product?.basePrice ?? ""));
   const [description, setDescription] = useState(product?.description ?? "");
   const [active, setActive] = useState(product?.active ?? true);
+  const [collectionId, setCollectionId] = useState<number | null>(
+    product?.collectionId ?? null,
+  );
   const [tags, setTags] = useState((product?.tags ?? []).join(", "));
 
   // Criação: variantes e imagens vão no payload
@@ -78,6 +84,7 @@ export default function AdminProductForm({ product }: Props) {
         basePrice: price,
         description: description.trim() || null,
         active,
+        collectionId,
         tags: parsedTags,
         variants,
         images,
@@ -100,6 +107,7 @@ export default function AdminProductForm({ product }: Props) {
           basePrice: price,
           description: description.trim() || null,
           active,
+          collectionId,
           tags: parsedTags,
         },
       }).unwrap();
@@ -187,6 +195,25 @@ export default function AdminProductForm({ product }: Props) {
             />
             <Label htmlFor="prod-active">Ativo</Label>
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="prod-collection">Coleção</Label>
+          <select
+            id="prod-collection"
+            value={collectionId ?? ""}
+            onChange={(e) =>
+              setCollectionId(e.target.value ? Number(e.target.value) : null)
+            }
+            data-testid="prod-collection"
+            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <option value="">— Sem coleção —</option>
+            {collections.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label>Descrição</Label>

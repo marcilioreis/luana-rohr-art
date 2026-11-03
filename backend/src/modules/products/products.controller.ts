@@ -11,12 +11,24 @@ const getNumericId = (param: string | string[]): number => {
 };
 
 // ========== PÚBLICO ==========
+export const listCollections = async (_req: Request, res: Response) => {
+  try {
+    const items = await productService.listCollections();
+    res.json(items);
+  } catch (error) {
+    console.error('List collections error:', error);
+    res.status(500).json({ error: 'Falha ao listar coleções' });
+  }
+};
+
 export const listProducts = async (req: Request, res: Response) => {
   try {
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const collection =
+      typeof req.query.collection === 'string' ? req.query.collection : undefined;
     const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
     const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
-    const items = await productService.listPublic({ search, limit, offset });
+    const items = await productService.listPublic({ search, collection, limit, offset });
     res.json(items);
   } catch (error) {
     console.error('List products error:', error);

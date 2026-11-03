@@ -1,12 +1,33 @@
 // src/modules/products/products.service.ts
 import { eq, and, desc, asc, ilike, sql } from 'drizzle-orm';
 import { db } from '../../shared/db/index.js';
-import { products, productVariants, productImages } from '../../shared/db/schema/products.js';
+import {
+  products,
+  productVariants,
+  productImages,
+  collections,
+} from '../../shared/db/schema/products.js';
 import type {
   InsertProduct,
   InsertProductVariant,
   InsertProductImage,
 } from '../../shared/db/schema/products.js';
+
+// ========== COLEÇÕES ==========
+export const listCollections = async () =>
+  db
+    .select()
+    .from(collections)
+    .where(eq(collections.active, true))
+    .orderBy(asc(collections.sortOrder), asc(collections.id));
+
+const resolveCollectionId = async (slug: string): Promise<number | null> => {
+  const [row] = await db
+    .select({ id: collections.id })
+    .from(collections)
+    .where(eq(collections.slug, slug));
+  return row?.id ?? null;
+};
 
 export const slugify = (value: string): string =>
   value
@@ -35,6 +56,7 @@ const ensureUniqueSlug = async (base: string, ignoreId?: number): Promise<string
 
 export interface ProductListFilters {
   search?: string;
+  collection?: string;
   active?: boolean;
   limit?: number;
   offset?: number;
@@ -47,6 +69,13 @@ export const listPublic = async (filters: ProductListFilters = {}) => {
   const conditions = [eq(products.active, true)];
   if (filters.search) {
     conditions.push(ilike(products.name, `%${filters.search}%`));
+  }
+  if (filters.collection) {
+    const collectionId = await resolveCollectionId(filters.collection);
+    // Coleção inexistente → nenhum produto (condição impossível)
+    conditions.push(
+      collectionId ? eq(products.collectionId, collectionId) : sql`false`
+    );
   }
 
   const rows = await db

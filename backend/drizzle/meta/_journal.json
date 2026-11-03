@@ -22,6 +22,13 @@
       "when": 1793721123651,
       "tag": "0002_order_delivery_method",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793727654076,
+      "tag": "0003_collections",
+      "breakpoints": true
     }
   ]
 }

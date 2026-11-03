@@ -7,17 +7,27 @@ import type {
   ProductVariant,
   VariantPayload,
   ProductImage,
+  Collection,
 } from "./products.types";
 
 export const productsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // ---- Público ----
-    getProducts: builder.query<ProductListItem[], { search?: string } | void>({
+    getCollections: builder.query<Collection[], void>({
+      query: () => "/products/collections",
+    }),
+    getProducts: builder.query<
+      ProductListItem[],
+      { search?: string; collection?: string } | void
+    >({
       query: (args) => {
-        const search = args && "search" in args ? args.search : undefined;
-        return search
-          ? `/products?search=${encodeURIComponent(search)}`
-          : "/products";
+        const params = new URLSearchParams();
+        if (args && "search" in args && args.search)
+          params.set("search", args.search);
+        if (args && "collection" in args && args.collection)
+          params.set("collection", args.collection);
+        const qs = params.toString();
+        return qs ? `/products?${qs}` : "/products";
       },
       providesTags: ["Product"],
     }),
@@ -135,6 +145,7 @@ export const productsApi = api.injectEndpoints({
 });
 
 export const {
+  useGetCollectionsQuery,
   useGetProductsQuery,
   useGetProductBySlugQuery,
   useGetAdminProductsQuery,

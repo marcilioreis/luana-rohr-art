@@ -1,3 +1,13 @@
+export interface Collection {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  accent: "blue" | "red";
+  sortOrder: number;
+  active: boolean;
+}
+
 export interface ProductImage {
   id: number;
   url: string;
@@ -25,6 +35,7 @@ export interface ProductListItem {
   description?: string | null;
   basePrice: number;
   active: boolean;
+  collectionId?: number | null;
   tags?: string[] | null;
   image: ProductImage | null;
 }
@@ -37,6 +48,7 @@ export interface Product {
   description?: string | null;
   basePrice: number;
   active: boolean;
+  collectionId?: number | null;
   tags?: string[] | null;
   createdAt?: string;
   variants: ProductVariant[];
@@ -55,6 +67,7 @@ export interface ProductPayload {
   description?: string | null;
   basePrice: number;
   active?: boolean;
+  collectionId?: number | null;
   tags?: string[];
   variants?: VariantPayload[];
   images?: Array<{ url: string; alt?: string; order?: number }>;

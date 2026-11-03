@@ -25,6 +25,7 @@ export const createProductSchema = z.object({
   description: z.string().optional().nullable(),
   basePrice: z.number().gt(0, 'Preço deve ser maior que zero'),
   active: z.boolean().optional().default(true),
+  collectionId: z.number().int().positive().nullable().optional(),
   customStyle: z.unknown().optional(),
   tags: z.array(z.string()).optional(),
   variants: z.array(variantSchema).optional(),
@@ -38,6 +39,7 @@ export const updateProductSchema = z
     description: z.string().optional().nullable(),
     basePrice: z.number().gt(0).optional(),
     active: z.boolean().optional(),
+    collectionId: z.number().int().positive().nullable().optional(),
     customStyle: z.unknown().optional(),
     tags: z.array(z.string()).optional(),
   })

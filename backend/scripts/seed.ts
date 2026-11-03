@@ -118,6 +118,38 @@ async function seed() {
 
   const adminId = await ensureAdminUser(adminEmail, adminName, adminPassword);
 
+  // 3b. Coleções curatoriais
+  console.log('🎨 Inserindo coleções...');
+  await db
+    .insert(schema.collections)
+    .values([
+      {
+        slug: 'mandalas',
+        title: 'Mandalas',
+        subtitle: 'Geometria e meditação em cada traço.',
+        accent: 'blue',
+        sortOrder: 1,
+      },
+      {
+        slug: 'manifesto',
+        title: 'Manifesto',
+        subtitle: 'Arte que toma posição.',
+        accent: 'red',
+        sortOrder: 2,
+      },
+      {
+        slug: 'pinturas',
+        title: 'Pinturas',
+        subtitle: 'Do quadro para a camiseta.',
+        accent: 'blue',
+        sortOrder: 3,
+      },
+    ])
+    .onConflictDoNothing();
+  const insertedCollections = await db.select().from(schema.collections);
+  const collectionId = (slug: string | null) =>
+    slug ? (insertedCollections.find((c) => c.slug === slug)?.id ?? null) : null;
+
   // 4. Produtos de exemplo (camisetas)
   console.log('👕 Inserindo produtos de exemplo...');
   const sampleProducts = [
@@ -127,6 +159,7 @@ async function seed() {
       description: 'Camiseta 100% algodão com estampa exclusiva em aquarela de flores do cerrado.',
       colors: ['Branca', 'Areia'],
       tags: ['aquarela', 'botânica'],
+      collection: 'pinturas' as string | null,
     },
     {
       name: 'Camiseta Traço Minimalista',
@@ -134,6 +167,7 @@ async function seed() {
       description: 'Arte de linha única desenhada à mão. Toque macio e caimento leve.',
       colors: ['Preta', 'Branca'],
       tags: ['minimalista', 'line art'],
+      collection: null as string | null,
     },
     {
       name: 'Camiseta Retrato Abstrato',
@@ -141,6 +175,7 @@ async function seed() {
       description: 'Estampa de retrato abstrato em tons terrosos. Edição limitada.',
       colors: ['Terracota', 'Off-white'],
       tags: ['abstrato', 'edição limitada'],
+      collection: 'pinturas' as string | null,
     },
   ];
 
@@ -165,6 +200,7 @@ async function seed() {
         description: p.description,
         basePrice: p.basePrice,
         active: true,
+        collectionId: collectionId(p.collection),
         tags: p.tags,
         createdBy: adminId,
       })
