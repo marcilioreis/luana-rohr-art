@@ -60,6 +60,15 @@ máquina antiga para os mesmos caminhos na nova:
 - `.env` (raiz, usado só pelo docker-compose — opcional neste fluxo isolado)
 - `tests/.env.test` (se for rodar o E2E completo)
 
+> ⚠️ **Depois de copiar, revise o `DATABASE_URL` (e `REDIS_URL`) do
+> `backend/.env`.** Se na máquina antiga o Postgres era **nativo** (ex.: usuário
+> `marcilioreis`, porta `5432`), esses valores **não** servem para o container
+> Docker da máquina nova e geram `role ... does not exist` / conflito de porta.
+> Para o fluxo com Docker, deixe:
+> `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/luana_rohr_art` e
+> `REDIS_URL=redis://localhost:6380`. (A porta **5433** evita bater num Postgres
+> nativo na 5432.) O `setup.sh` cria o container batendo com o que estiver aqui.
+
 ### Opção B — Recriar a partir dos `.env.example`
 
 ```bash
@@ -266,8 +275,23 @@ O E2E tem `global.setup` que **cria/destrói um banco de teste dedicado** e
 - **Redis fora do ar:** o rate-limiter é _fail-open_ e o Redis só é essencial para
   a fila de exportação (BullMQ). A loja sobe e funciona mesmo com o `lra-redis`
   parado; só os exports de pedido ficam indisponíveis.
-- **`password authentication failed` no migrate:** o `DATABASE_URL` não aponta para o
-  Postgres certo. Confirme a porta (5433) e que `lra-postgres` está `Up`.
+- **`failed to bind host port 0.0.0.0:5432: address already in use`:** a porta do
+  seu `DATABASE_URL` (ex.: 5432) já está em uso — tipicamente por um **Postgres
+  nativo** na máquina nova. Use a porta **5433** no `DATABASE_URL` (o container mapeia
+  `5433:5432`, sem conflito). Veja o que ocupa a porta: `ss -ltnp | grep ':5432'`.
+- **`role "<usuário>" does not exist` (migrate/seed/createdb):** o usuário do
+  `DATABASE_URL` não existe no container. Causa comum: `.env` copiado da máquina antiga
+  (usuário `marcilioreis` de um Postgres nativo) enquanto o container foi criado como
+  `postgres`. **Alinhe os dois:** ou ajuste o `.env` para `postgres:postgres`, ou recrie
+  o container com o usuário do `.env`. Com o `setup.sh`: `./setup.sh --reset-db`.
+- **`database "luana_rohr_art" does not exist`:** um container `lra-postgres`
+  pré-existente foi reaproveitado sem o banco (o `POSTGRES_DB` só cria o banco na 1ª
+  inicialização do volume). Rode `./setup.sh` (ele cria o banco se faltar) ou
+  `docker exec lra-postgres createdb -U <usuário> luana_rohr_art`.
+- **`password authentication failed` no migrate/seed:** a senha do `DATABASE_URL` não
+  bate com a do container. Confirme usuário/senha/porta, ou recrie: `./setup.sh --reset-db`.
+- **`Cannot read properties of undefined (reading 'includes')` no seed:** era um bug de
+  carregamento do `.env` já corrigido — rode `git pull`.
 - **`psql: not found` no E2E:** instale `postgresql-client` (seção 0).
 - **Browsers do Playwright ausentes:** `npx playwright install chromium`.
 - **Node < 20.19:** troque com `nvm use 22`.
@@ -284,4 +308,3 @@ O E2E tem `global.setup` que **cria/destrói um banco de teste dedicado** e
 - Para resetar o banco do zero: `docker rm -f lra-postgres`, recrie o container
   (seção 3) e rode migrate + seed de novo.
 - Referência de arquitetura e regras de negócio: `CLAUDE.md` e `HANDOVER.md`.
-</content>
