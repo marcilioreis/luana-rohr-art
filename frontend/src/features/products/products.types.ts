@@ -35,6 +35,7 @@ export interface ProductListItem {
   description?: string | null;
   basePrice: number;
   active: boolean;
+  featured?: boolean;
   collectionId?: number | null;
   tags?: string[] | null;
   image: ProductImage | null;
@@ -48,6 +49,7 @@ export interface Product {
   description?: string | null;
   basePrice: number;
   active: boolean;
+  featured?: boolean;
   collectionId?: number | null;
   tags?: string[] | null;
   createdAt?: string;
@@ -67,6 +69,7 @@ export interface ProductPayload {
   description?: string | null;
   basePrice: number;
   active?: boolean;
+  featured?: boolean;
   collectionId?: number | null;
   tags?: string[];
   variants?: VariantPayload[];

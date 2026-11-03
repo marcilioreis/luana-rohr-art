@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   useGetProductsQuery,
   useGetCollectionsQuery,
+  useGetFeaturedProductQuery,
 } from "../products/productsApi";
 import ProductCard from "../products/ProductCard";
 import { Mandala } from "@/components/brand/Mandala";
@@ -12,8 +13,10 @@ import { cn } from "@/lib/utils";
 export default function HomePage() {
   const { data: products, isLoading } = useGetProductsQuery();
   const { data: collections = [] } = useGetCollectionsQuery();
+  const { data: featuredProduct } = useGetFeaturedProductQuery();
   const highlights = products?.slice(0, 4) ?? [];
-  const featured = highlights[0];
+  // Destaque escolhido no admin; fallback para o produto mais recente.
+  const featured = featuredProduct ?? highlights[0];
 
   return (
     <div>

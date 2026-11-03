@@ -34,6 +34,8 @@ export const products = pgTable('products', {
   description: text('description'),
   basePrice: doublePrecision('base_price').notNull(),
   active: boolean('active').default(true).notNull(),
+  // Produto em destaque no hero da Home (admin escolhe)
+  featured: boolean('featured').default(false).notNull(),
   // Coleção curatorial (nullable: produto pode não pertencer a nenhuma)
   collectionId: integer('collection_id').references(() => collections.id, {
     onDelete: 'set null',

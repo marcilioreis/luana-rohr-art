@@ -160,6 +160,7 @@ async function seed() {
       colors: ['Branca', 'Areia'],
       tags: ['aquarela', 'botânica'],
       collection: 'pinturas' as string | null,
+      featured: true,
     },
     {
       name: 'Camiseta Traço Minimalista',
@@ -200,6 +201,7 @@ async function seed() {
         description: p.description,
         basePrice: p.basePrice,
         active: true,
+        featured: "featured" in p ? Boolean(p.featured) : false,
         collectionId: collectionId(p.collection),
         tags: p.tags,
         createdBy: adminId,

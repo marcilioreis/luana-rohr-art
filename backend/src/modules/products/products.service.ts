@@ -100,6 +100,24 @@ export const listPublic = async (filters: ProductListFilters = {}) => {
   );
 };
 
+// Produto em destaque no hero da Home (mais recente marcado como featured).
+export const getFeaturedPublic = async () => {
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(and(eq(products.active, true), eq(products.featured, true)))
+    .orderBy(desc(products.createdAt))
+    .limit(1);
+  if (!product) return null;
+  const [image] = await db
+    .select()
+    .from(productImages)
+    .where(eq(productImages.productId, product.id))
+    .orderBy(asc(productImages.order))
+    .limit(1);
+  return { ...product, image: image ?? null };
+};
+
 export const getBySlugPublic = async (slug: string) => {
   const [product] = await db
     .select()

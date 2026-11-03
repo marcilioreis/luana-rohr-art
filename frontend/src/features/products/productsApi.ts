@@ -16,6 +16,10 @@ export const productsApi = api.injectEndpoints({
     getCollections: builder.query<Collection[], void>({
       query: () => "/products/collections",
     }),
+    getFeaturedProduct: builder.query<ProductListItem | null, void>({
+      query: () => "/products/featured",
+      providesTags: ["Product"],
+    }),
     getProducts: builder.query<
       ProductListItem[],
       { search?: string; collection?: string } | void
@@ -146,6 +150,7 @@ export const productsApi = api.injectEndpoints({
 
 export const {
   useGetCollectionsQuery,
+  useGetFeaturedProductQuery,
   useGetProductsQuery,
   useGetProductBySlugQuery,
   useGetAdminProductsQuery,

@@ -21,6 +21,16 @@ export const listCollections = async (_req: Request, res: Response) => {
   }
 };
 
+export const getFeaturedProduct = async (_req: Request, res: Response) => {
+  try {
+    const product = await productService.getFeaturedPublic();
+    res.json(product); // pode ser null (nenhum destaque definido)
+  } catch (error) {
+    console.error('Get featured product error:', error);
+    res.status(500).json({ error: 'Falha ao obter produto em destaque' });
+  }
+};
+
 export const listProducts = async (req: Request, res: Response) => {
   try {
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;

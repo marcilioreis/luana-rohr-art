@@ -51,6 +51,7 @@ export default function AdminProductForm({ product }: Props) {
   const [basePrice, setBasePrice] = useState(String(product?.basePrice ?? ""));
   const [description, setDescription] = useState(product?.description ?? "");
   const [active, setActive] = useState(product?.active ?? true);
+  const [featured, setFeatured] = useState(product?.featured ?? false);
   const [collectionId, setCollectionId] = useState<number | null>(
     product?.collectionId ?? null,
   );
@@ -86,6 +87,7 @@ export default function AdminProductForm({ product }: Props) {
         basePrice: price,
         description: description.trim() || null,
         active,
+        featured,
         collectionId,
         tags: parsedTags,
         variants,
@@ -110,6 +112,7 @@ export default function AdminProductForm({ product }: Props) {
           basePrice: price,
           description: description.trim() || null,
           active,
+          featured,
           collectionId,
           tags: parsedTags,
         },
@@ -231,6 +234,20 @@ export default function AdminProductForm({ product }: Props) {
               </option>
             ))}
           </select>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+          <Switch
+            checked={featured}
+            onCheckedChange={setFeatured}
+            id="prod-featured"
+            data-testid="prod-featured"
+          />
+          <Label htmlFor="prod-featured" className="cursor-pointer">
+            Destaque na Home
+            <span className="ml-1 font-normal text-muted-foreground">
+              — aparece no hero da página inicial
+            </span>
+          </Label>
         </div>
         <div className="space-y-2">
           <Label>Descrição</Label>

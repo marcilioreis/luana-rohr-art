@@ -94,6 +94,17 @@ router.get('/collections', controller.listCollections);
 
 /**
  * @openapi
+ * /api/products/featured:
+ *   get:
+ *     summary: Produto em destaque na Home (ou null)
+ *     tags: [Produtos]
+ *     responses:
+ *       200: { description: Produto em destaque ou null }
+ */
+router.get('/featured', controller.getFeaturedProduct);
+
+/**
+ * @openapi
  * /api/products/{slug}:
  *   get:
  *     summary: Obter um produto pelo slug (PDP)
