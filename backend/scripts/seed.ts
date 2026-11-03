@@ -1,6 +1,8 @@
 // scripts/seed.ts
-import * as dotenv from 'dotenv';
-dotenv.config();
+// IMPORTANTE: carrega o .env ANTES de qualquer import que toque no db
+// (ESM executa os imports antes do corpo do módulo, então dotenv.config() no
+// corpo rodaria tarde demais — por isso usamos o side-effect import).
+import 'dotenv/config';
 
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';

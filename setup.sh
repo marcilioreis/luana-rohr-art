@@ -147,9 +147,9 @@ npm install --prefix frontend
 
 # ---------- Passo 5: migrate + seed ----------
 log "Passo 5 — migrations"
-npm --prefix backend run db:migrate
+DATABASE_URL="$DATABASE_URL" npm --prefix backend run db:migrate
 log "Passo 5 — seed (dados de exemplo, idempotente)"
-( cd backend && npx tsx scripts/seed.ts )
+( cd backend && DATABASE_URL="$DATABASE_URL" npx tsx scripts/seed.ts )
 
 # ---------- Passo 6: rodar ----------
 if [ "$RUN_SERVERS" -eq 1 ]; then
