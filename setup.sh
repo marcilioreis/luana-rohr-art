@@ -64,17 +64,17 @@ REDIS_URL="$(envval REDIS_URL || true)"
 # Parse confiável via node (lida com senha codificada e defaults)
 IFS=$'\t' read -r PG_USER PG_PASS PG_DB PG_HOST PG_PORT < <(node -e '
   const u = new URL(process.argv[1]); const d = decodeURIComponent;
-  process.stdout.write([d(u.username), d(u.password), d(u.pathname.replace(/^\//,"")),
-                        u.hostname, u.port || "5432"].join("\t"));
-' "$DATABASE_URL")
-[ -n "${PG_USER:-}" ] && [ -n "${PG_DB:-}" ] || die "não consegui parsear DATABASE_URL"
+  console.log([d(u.username), d(u.password), d(u.pathname.replace(/^\//,"")),
+               u.hostname, u.port || "5432"].join("\t"));
+' "$DATABASE_URL") || true
+[ -n "${PG_USER:-}" ] && [ -n "${PG_DB:-}" ] || die "não consegui parsear DATABASE_URL de backend/.env"
 
 REDIS_HOST=localhost; REDIS_PORT=6380
 if [ -n "$REDIS_URL" ]; then
   IFS=$'\t' read -r REDIS_HOST REDIS_PORT < <(node -e '
     const u = new URL(process.argv[1]);
-    process.stdout.write([u.hostname, u.port || "6379"].join("\t"));
-  ' "$REDIS_URL")
+    console.log([u.hostname, u.port || "6379"].join("\t"));
+  ' "$REDIS_URL") || true
 fi
 
 is_local() { case "$1" in localhost|127.0.0.1|::1|0.0.0.0) return 0 ;; *) return 1 ;; esac; }
