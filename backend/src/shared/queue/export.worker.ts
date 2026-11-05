@@ -90,6 +90,10 @@ export const startExportWorker = () => {
     {
       connection: redis,
       autorun: true,
+      drainDelay: 60_000, // ⏱️ 60 segundos entre polls quando a fila está vazia
+      stalledInterval: 300_000, // ⏱️ 5 minutos entre verificações de jobs travados
+      // lockDuration: 60_000,   // (opcional) renovação de lock menos frequente
+      // maxStalledCount: 1,     // (opcional) reduz tentativas de recuperação
     }
   );
 

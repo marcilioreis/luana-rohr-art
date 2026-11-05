@@ -226,7 +226,7 @@ export default function ProductDetail() {
       {product.description && (
         <section className="mx-auto mt-14 max-w-3xl border-t pt-10">
           <h2 className="font-heading text-xl">A obra</h2>
-          <p className="mt-3 leading-relaxed text-muted-foreground">
+          <p className="mt-3 leading-relaxed text-muted-foreground whitespace-pre-wrap">
             {product.description}
           </p>
         </section>
