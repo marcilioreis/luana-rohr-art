@@ -5,7 +5,11 @@ import {
   useGetFeaturedProductQuery,
 } from "../products/productsApi";
 import ProductCard from "../products/ProductCard";
-import { Mandala } from "@/components/brand/Mandala";
+import {
+  Mandala,
+  MandalaStar,
+  MandalaFlower,
+} from "@/components/brand/Mandala";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
 import { cn } from "@/lib/utils";
@@ -22,9 +26,9 @@ export default function HomePage() {
     <div>
       {/* Hero — artwork-forward */}
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-accent/40 to-background">
-        <Mandala
+        <MandalaFlower
           strokeWidth={1.5}
-          className="pointer-events-none absolute -left-28 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 text-primary/5"
+          className="pointer-events-none absolute -left-50 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 text-brand-red/40 -z-1"
         />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div className="text-center md:text-left">
@@ -49,7 +53,7 @@ export default function HomePage() {
           </div>
 
           <div className="relative mx-auto w-full max-w-sm">
-            <Mandala className="pointer-events-none absolute -right-5 -top-5 z-10 h-20 w-20 text-brand-red/70" />
+            <MandalaStar className="pointer-events-none absolute -right-5 -top-5 z-10 h-20 w-20 text-primary/50" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border bg-muted shadow-sm">
               {featured?.image ? (
                 <img
@@ -82,7 +86,7 @@ export default function HomePage() {
               to={`/loja?colecao=${c.slug}`}
               className="group relative overflow-hidden rounded-xl border bg-card p-6 transition-shadow hover:shadow-md"
             >
-              <Mandala
+              <MandalaStar
                 className={cn(
                   "pointer-events-none absolute -right-8 -top-8 h-32 w-32 transition-transform duration-500 group-hover:rotate-45",
                   c.accent === "red" ? "text-brand-red/15" : "text-primary/15",
@@ -132,7 +136,7 @@ export default function HomePage() {
 
       {/* Faixa manifesto */}
       <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <Mandala
+        <MandalaFlower
           strokeWidth={1.5}
           className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 text-primary-foreground/10"
         />

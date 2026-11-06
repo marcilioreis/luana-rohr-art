@@ -34,8 +34,7 @@ export const getFeaturedProduct = async (_req: Request, res: Response) => {
 export const listProducts = async (req: Request, res: Response) => {
   try {
     const search = typeof req.query.search === 'string' ? req.query.search : undefined;
-    const collection =
-      typeof req.query.collection === 'string' ? req.query.collection : undefined;
+    const collection = typeof req.query.collection === 'string' ? req.query.collection : undefined;
     const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined;
     const offset = req.query.offset ? parseInt(String(req.query.offset), 10) : undefined;
     const items = await productService.listPublic({ search, collection, limit, offset });

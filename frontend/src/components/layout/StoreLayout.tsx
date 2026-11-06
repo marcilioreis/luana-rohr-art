@@ -3,7 +3,7 @@ import { Outlet, NavLink, Link } from "react-router-dom";
 import { useAppSelector } from "@/app/hooks";
 import { selectCartCount } from "@/features/cart/cartSlice";
 import CartDrawer from "@/features/cart/CartDrawer";
-import { Mandala } from "@/components/brand/Mandala";
+import { Mandala, MandalaStar } from "@/components/brand/Mandala";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, User } from "lucide-react";
 
@@ -107,15 +107,15 @@ export default function StoreLayout() {
         <Outlet />
       </main>
 
-      <footer className="relative mt-16 overflow-hidden border-t">
+      <footer className="relative overflow-hidden border-t">
         {/* Mandala d'água (bem sutil) */}
-        <Mandala
+        <MandalaStar
           strokeWidth={1.5}
           className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 text-primary/5"
         />
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="flex flex-col items-center gap-4 text-center">
-            <Mandala className="h-9 w-9 text-brand-red" />
+            <Mandala className="h-10 w-10 text-brand-red" />
             <p className="font-heading text-xl">Arte que veste manifesto.</p>
             <p className="max-w-md text-sm text-muted-foreground">
               Estampas autorais, edições limitadas e muito traço de mão por

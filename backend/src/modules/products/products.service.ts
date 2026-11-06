@@ -73,9 +73,7 @@ export const listPublic = async (filters: ProductListFilters = {}) => {
   if (filters.collection) {
     const collectionId = await resolveCollectionId(filters.collection);
     // Coleção inexistente → nenhum produto (condição impossível)
-    conditions.push(
-      collectionId ? eq(products.collectionId, collectionId) : sql`false`
-    );
+    conditions.push(collectionId ? eq(products.collectionId, collectionId) : sql`false`);
   }
 
   const rows = await db

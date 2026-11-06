@@ -73,8 +73,7 @@ export default function AboutPage() {
               Você monta o pedido e gera um{" "}
               <strong className="text-foreground">PIX “copia e cola”</strong>{" "}
               com o valor exato. Assim que confirmamos o pagamento, preparamos
-              tudo com carinho. Simples e à vista — sem gateway, sem
-              complicação.
+              tudo com carinho.
             </p>
           </div>
 
