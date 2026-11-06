@@ -56,7 +56,7 @@ export default function ProductList() {
 
       {/* Chips de coleção (dados reais) */}
       {collections.length > 0 && (
-        <div className="mb-8 flex flex-wrap gap-2">
+        <div className="mb-8 flex flex-wrap justify-center gap-2 ">
           <Chip active={!colecao} onClick={() => setColecao(null)}>
             Todas
           </Chip>
@@ -131,7 +131,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-4 py-1.5 text-sm transition-colors",
+        "border px-4 py-1.5 text-sm transition-colors",
         active
           ? accent === "red"
             ? "border-brand-red bg-brand-red text-white"

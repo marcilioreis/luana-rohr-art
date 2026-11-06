@@ -20,6 +20,12 @@ export interface ExportJobData {
 }
 
 export const startExportWorker = () => {
+  // ⛔️ Verificação para desabilitar o worker em desenvolvimento
+  if (process.env.WORKER_DISABLED === 'true') {
+    console.info('🛑 Worker de exportação desabilitado via WORKER_DISABLED');
+    return;
+  }
+
   const worker = new Worker<ExportJobData>(
     'order-exports',
     async (job: Job<ExportJobData>) => {
