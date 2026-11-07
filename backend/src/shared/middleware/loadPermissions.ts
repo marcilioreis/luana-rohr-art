@@ -1,3 +1,5 @@
+// src/shared/auth/loadPermissions.ts
+// (ajuste o caminho do import conforme a estrutura do seu projeto)
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db/index.js';
 import {
@@ -8,48 +10,64 @@ import {
   userPermissions,
 } from '../db/schema/index.js';
 import { eq, and } from 'drizzle-orm';
-import { redis } from '../redis/index.js';
+import { cacheGet, cacheSet } from '../redis/cache.js';
 
 /**
- * Middleware que carrega as permissões do usuário (diretas e herdadas de roles) e
- * as anexa em req.userPermissions (Set de códigos) e req.isAdmin (boolean).
+ * Middleware que carrega as permissões do usuário (diretas e herdadas de roles)
+ * e as anexa em `req.userPermissions` (Set de códigos) e `req.isAdmin` (boolean).
  *
- * Utiliza cache Redis (TTL 60s) para evitar consultas repetidas ao banco.
- * Deve ser usado após o middleware de autenticação (authenticate).
+ * Cache:
+ * - Usa `cacheGet`/`cacheSet` (resilientes): falha de Redis = cache miss silencioso.
+ * - TTL de 60s por usuário.
+ * - Desligável globalmente via REDIS_CACHE_ENABLED=false.
+ *
+ * Erros:
+ * - Falha de banco: nega permissões e propaga via `next(error)`.
+ * - Falha de cache: ignorada (nunca derruba a request).
+ *
+ * Deve ser usado após o middleware de autenticação (`authenticate`).
  */
-export const loadPermissions = async (req: Request, res: Response, next: NextFunction) => {
+const CACHE_TTL_SECONDS = 60;
+
+interface CachedPermissions {
+  permissions: string[];
+  isAdmin: boolean;
+}
+
+export const loadPermissions = async (req: Request, _res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.id;
+
+    // Sem usuário autenticado: segue com permissões vazias
     if (!userId) {
       req.userPermissions = new Set();
       req.isAdmin = false;
       return next();
     }
 
-    // Tenta obter do cache Redis
     const cacheKey = `permissions:${userId}`;
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      const data = JSON.parse(cached);
-      req.userPermissions = new Set(data.permissions);
-      req.isAdmin = data.isAdmin;
+
+    // 1) Tenta cache (falha silenciosa → retorna null → segue pro DB)
+    const cached = await cacheGet<CachedPermissions>(cacheKey);
+    if (cached && Array.isArray(cached.permissions) && typeof cached.isAdmin === 'boolean') {
+      req.userPermissions = new Set(cached.permissions);
+      req.isAdmin = cached.isAdmin;
       return next();
     }
 
-    // Consulta ao banco
+    // 2) Cache miss: consulta ao banco
     const [userRecord] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId));
 
     const isAdmin = userRecord?.role === 'admin';
-    req.isAdmin = isAdmin;
 
-    // Busca permissões diretas (granted = true)
+    // Permissões diretas (granted = true)
     const directPerms = await db
       .select({ code: permissions.code })
       .from(userPermissions)
       .innerJoin(permissions, eq(userPermissions.permissionId, permissions.id))
       .where(and(eq(userPermissions.userId, userId), eq(userPermissions.granted, true)));
 
-    // Busca permissões herdadas de roles
+    // Permissões herdadas de roles
     const rolePerms = await db
       .select({ code: permissions.code })
       .from(userRoles)
@@ -62,25 +80,24 @@ export const loadPermissions = async (req: Request, res: Response, next: NextFun
     for (const p of directPerms) permsSet.add(p.code);
     for (const p of rolePerms) permsSet.add(p.code);
 
+    // 3) Anexa na request
     req.userPermissions = permsSet;
+    req.isAdmin = isAdmin;
 
-    // Salva no Redis por 60 segundos
-    await redis.set(
+    // 4) Popula o cache (falha silenciosa, nunca derruba a request)
+    await cacheSet(
       cacheKey,
-      JSON.stringify({
-        permissions: Array.from(permsSet),
-        isAdmin,
-      }),
-      'EX',
-      60
+      { permissions: Array.from(permsSet), isAdmin } satisfies CachedPermissions,
+      CACHE_TTL_SECONDS
     );
 
-    next();
+    return next();
   } catch (error) {
-    console.error('Failed to load permissions:', error);
-    // Em caso de falha, nega permissão por segurança
+    // Só chega aqui em falha real (banco, tipicamente).
+    // Mantém o comportamento de negar por segurança e propaga o erro.
+    console.error('❌ Falha ao carregar permissões (DB):', error);
     req.userPermissions = new Set();
     req.isAdmin = false;
-    next(error);
+    return next(error);
   }
 };
