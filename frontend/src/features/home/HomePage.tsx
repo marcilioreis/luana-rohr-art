@@ -32,28 +32,27 @@ export default function HomePage() {
         />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div className="text-center md:text-left">
-            <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              arte autoral · edições limitadas
-            </p>
-            <h1 className="text-4xl font-medium tracking-tight md:text-6xl">
-              Arte autoral que você veste
+            <h1 className="text-4xl font-medium tracking-tight md:text-5xl">
+              Arte é expressão. <br />É afeto. Manifesto!
             </h1>
             <p className="mx-auto mt-5 max-w-md text-muted-foreground md:mx-0">
-              Estampas exclusivas criadas à mão por Luana Rohr — aquarela, traço
-              minimalista e mandalas, com muito gesto em cada peça.
+              Criações autorais que atravessam símbolos, sentimentos e
+              posicionamentos, ganhando vida em diferentes formas e suportes.
             </p>
             <div className="mt-8 flex justify-center gap-3 md:justify-start">
               <Button asChild size="lg">
-                <Link to="/loja">Ver a loja</Link>
+                <Link to="/loja">Explorar obras</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/sobre">Sobre a artista</Link>
+                <Link to="/sobre">Conheça a artista</Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/loja?colecao=manifesto">Arte para vestir</Link>
               </Button>
             </div>
           </div>
 
           <div className="relative mx-auto w-full max-w-sm">
-            <MandalaStar className="pointer-events-none absolute -right-5 -top-5 z-10 h-20 w-20 text-primary/50" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border bg-muted shadow-sm">
               {featured?.image ? (
                 <img
@@ -142,10 +141,7 @@ export default function HomePage() {
         />
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
           <p className="font-heading text-2xl leading-snug md:text-3xl">
-            “Cada peça carrega um gesto político e um traço de mão.”
-          </p>
-          <p className="mt-4 text-sm text-primary-foreground/70">
-            Arte independente, impressa em pequenas tiragens.
+            “Do que me atravessa, faço arte.”
           </p>
         </div>
       </section>
@@ -161,9 +157,8 @@ export default function HomePage() {
               Luana Rohr
             </h2>
             <p className="mx-auto mt-3 max-w-md text-muted-foreground md:mx-0">
-              Artista visual e agente de cultura — aquarela, traço minimalista,
-              retratos abstratos e mandalas. Arte que atravessa política
-              cultural e processos participativos.
+              Artista multimídia, natural de Arroio do Meio (RS), com trajetória
+              artística independente desde 2017.
             </p>
             <Button asChild variant="outline" className="mt-5">
               <Link to="/sobre">Conhecer a artista</Link>

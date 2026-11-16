@@ -47,7 +47,7 @@ export default function StoreLayout() {
                 Luana Rohr
               </span>
               <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                arte autoral
+                faz arte
               </span>
             </span>
           </Link>
@@ -116,10 +116,12 @@ export default function StoreLayout() {
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="flex flex-col items-center gap-4 text-center">
             <Mandala className="h-10 w-10 text-brand-red" />
-            <p className="font-heading text-xl">Arte que veste manifesto.</p>
+            <p className="font-heading text-xl">
+              Arte é expressão. É afeto. Manifesto!
+            </p>
             <p className="max-w-md text-sm text-muted-foreground">
-              Estampas autorais, edições limitadas e muito traço de mão por
-              Luana Rohr.
+              Criações autorais que atravessam símbolos, sentimentos e
+              posicionamentos, ganhando vida em diferentes formas e suportes.
             </p>
             <a
               href="https://www.instagram.com/luanarohrart/"

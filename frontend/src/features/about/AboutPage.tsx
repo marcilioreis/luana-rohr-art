@@ -45,24 +45,34 @@ export default function AboutPage() {
         <article className="space-y-4 text-muted-foreground">
           <p>
             <strong className="text-foreground">Luana Rohr</strong> é artista
-            visual e ilustradora. Seu trabalho transita entre a aquarela, o
-            traço minimalista, os retratos abstratos e as mandalas — sempre
-            buscando traduzir emoções, e posições, em cores e formas.
+            multimídia, natural de Arroio do Meio (RS), com trajetória artística
+            independente desde 2017.
+          </p>
+          <p>
+            Sua produção transita entre diferentes linguagens, técnicas e
+            suportes, explorando o universo simbólico e as relações entre o
+            consciente e o inconsciente. Das mandalas às pinturas e ilustrações
+            autorais, busca traduzir emoções, inquietações e posicionamentos em
+            cores e formas que convidam a outras maneiras de perceber o mundo.
+          </p>
+          <p>
+            Sua trajetória também é atravessada por experiências coletivas,
+            intervenções artísticas e processos de criação compartilhada,
+            compreendendo a arte como espaço de expressão, encontro e
+            transformação.
           </p>
           <p>
             Para além do ateliê, atua com{" "}
             <strong className="text-foreground">
-              política cultural e processos participativos
+              produção cultural, políticas públicas de cultura e processos
+              participativos
             </strong>
-            , acreditando que arte e território caminham juntos. Cada estampa
-            carrega esse gesto: autoral, afetivo e com posição.
+            , acreditando que arte e território caminham juntos e que a cultura
+            é um direito fundamental.
           </p>
           <p>
-            Cada camiseta nasce de uma ilustração original, impressa em algodão
-            de qualidade e produzida em{" "}
-            <strong className="text-foreground">pequenas tiragens</strong>. Ao
-            vestir uma peça, você leva um pedaço de arte autoral — e apoia
-            diretamente o trabalho independente de uma artista.
+            Este espaço reúne obras, processos e experimentações de uma produção
+            artística em constante movimento.
           </p>
 
           <div className="rounded-lg border bg-card p-4 text-sm">
