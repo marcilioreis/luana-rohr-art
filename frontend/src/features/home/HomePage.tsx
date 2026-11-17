@@ -39,12 +39,12 @@ export default function HomePage() {
               Criações autorais que atravessam símbolos, sentimentos e
               posicionamentos, ganhando vida em diferentes formas e suportes.
             </p>
-            <div className="mt-8 flex justify-center gap-3 md:justify-start">
+            <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
               <Button asChild size="lg">
-                <Link to="/loja">Explorar obras</Link>
+                <Link to="/sobre">Conheça a artista</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link to="/sobre">Conheça a artista</Link>
+                <Link to="/loja">Explorar obras</Link>
               </Button>
               <Button asChild variant="outline" size="lg">
                 <Link to="/loja?colecao=manifesto">Arte para vestir</Link>
