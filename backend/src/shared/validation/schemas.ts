@@ -5,7 +5,8 @@ import { ORDER_STATUSES } from '../db/schema/orders.js';
 // ================== PRODUTOS ==================
 export const variantSchema = z.object({
   size: z.string().min(1, 'Tamanho é obrigatório'),
-  color: z.string().min(1, 'Cor é obrigatória'),
+  // Segundo eixo (cor/material) é opcional: peças únicas podem não ter.
+  color: z.string().min(1).optional().nullable(),
   sku: z.string().optional(),
   price: z.number().gt(0).optional().nullable(),
   stock: z.number().int().min(0, 'Estoque não pode ser negativo').default(0),
@@ -53,7 +54,7 @@ export const createVariantSchema = variantSchema;
 export const updateVariantSchema = z
   .object({
     size: z.string().min(1).optional(),
-    color: z.string().min(1).optional(),
+    color: z.string().min(1).optional().nullable(),
     sku: z.string().optional(),
     price: z.number().gt(0).optional().nullable(),
     stock: z.number().int().min(0, 'Estoque não pode ser negativo').optional(),

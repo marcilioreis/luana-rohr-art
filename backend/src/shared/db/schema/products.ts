@@ -54,7 +54,9 @@ export const productVariants = pgTable('product_variants', {
     .references(() => products.id, { onDelete: 'cascade' })
     .notNull(),
   size: varchar('size', { length: 20 }).notNull(),
-  color: varchar('color', { length: 40 }).notNull(),
+  // Segundo eixo de variação (ex.: cor, material). Opcional: peças únicas
+  // (quadros, gravuras, mandalas) podem não ter esse eixo.
+  color: varchar('color', { length: 40 }),
   sku: varchar('sku', { length: 60 }).unique(),
   // Preço opcional que sobrescreve o basePrice do produto
   price: doublePrecision('price'),

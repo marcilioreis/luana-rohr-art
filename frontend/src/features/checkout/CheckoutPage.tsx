@@ -411,7 +411,8 @@ export default function CheckoutPage() {
                 className="flex justify-between gap-2 text-sm"
               >
                 <span className="text-muted-foreground">
-                  {i.quantity}× {i.name} ({i.size}/{i.color})
+                  {i.quantity}× {i.name} (
+                  {[i.size, i.color].filter(Boolean).join("/")})
                 </span>
                 <span>{formatBRL(i.unitPrice * i.quantity)}</span>
               </li>

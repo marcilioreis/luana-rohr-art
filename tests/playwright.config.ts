@@ -23,9 +23,12 @@ export default defineConfig({
   },
 
   projects: [
-    // Projeto de setup (autenticação) – será executado uma vez
+    // Projeto de setup (autenticação) – será executado uma vez.
+    // O arquivo auth.setup.ts fica na raiz de tests/ (fora de ./specs), então
+    // este projeto precisa do seu próprio testDir para que o testMatch o encontre.
     {
       name: 'setup',
+      testDir: '.',
       testMatch: /auth\.setup\.ts/,
     },
     // Testes que dependem de login de admin já realizado

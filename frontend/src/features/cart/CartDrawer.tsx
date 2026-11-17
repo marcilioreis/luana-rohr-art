@@ -67,7 +67,7 @@ export default function CartDrawer({ open, onOpenChange }: Props) {
                       {item.name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {item.size} / {item.color}
+                      {[item.size, item.color].filter(Boolean).join(" / ")}
                     </p>
                     <p className="mt-1 text-sm font-semibold">
                       {formatBRL(item.unitPrice)}

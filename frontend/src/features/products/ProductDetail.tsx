@@ -10,26 +10,61 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/common/Skeleton";
 
+// Valores que significam "este eixo não se aplica" (compat. com dados antigos
+// cadastrados como "N/A" antes do eixo virar opcional).
+const NON_AXIS_VALUES = new Set(["", "n/a", "na", "-", "—", "nao aplicavel"]);
+const isRealAxisValue = (v: string | null | undefined): v is string =>
+  v != null && !NON_AXIS_VALUES.has(v.trim().toLowerCase());
+
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const dispatch = useAppDispatch();
   const { data: product, isLoading, isError } = useGetProductBySlugQuery(slug!);
 
   const [activeImage, setActiveImage] = useState(0);
-  const [size, setSize] = useState<string | null>(null);
-  const [color, setColor] = useState<string | null>(null);
+  const [sizeOverride, setSize] = useState<string | null>(null);
+  const [colorOverride, setColor] = useState<string | null>(null);
 
+  // Eixos de variação só aparecem se tiverem valor "real". Valores sentinela
+  // (vazio, "N/A", "-") são tratados como "eixo ausente" — assim peças únicas
+  // (quadros, gravuras, mandalas) não mostram um seletor vazio ao cliente.
   const sizes = useMemo(
-    () => Array.from(new Set(product?.variants.map((v) => v.size) ?? [])),
+    () =>
+      Array.from(new Set(product?.variants.map((v) => v.size) ?? [])).filter(
+        isRealAxisValue,
+      ),
     [product],
   );
   const colors = useMemo(
-    () => Array.from(new Set(product?.variants.map((v) => v.color) ?? [])),
+    () =>
+      Array.from(new Set(product?.variants.map((v) => v.color) ?? [])).filter(
+        isRealAxisValue,
+      ),
     [product],
   );
+  const hasSizeAxis = sizes.length > 0;
+  const hasColorAxis = colors.length > 0;
+
+  // Seleção automática: usa a escolha do usuário se houver; senão, cai no
+  // primeiro valor disponível (vale para uma única variação ou várias —
+  // sempre defaulta para o primeiro). Eixo ausente fica em null.
+  const color = hasColorAxis ? (colorOverride ?? colors[0]) : null;
+  const size = useMemo(() => {
+    if (!hasSizeAxis) return null;
+    if (sizeOverride) return sizeOverride;
+    // primeiro tamanho com estoque para a cor atual; senão, o primeiro tamanho
+    const inStock = sizes.find((s) =>
+      product?.variants.some(
+        (v) =>
+          v.size === s && (!hasColorAxis || v.color === color) && v.stock > 0,
+      ),
+    );
+    return inStock ?? sizes[0];
+  }, [hasSizeAxis, sizeOverride, hasColorAxis, color, sizes, product]);
 
   const selectedVariant: ProductVariant | undefined = product?.variants.find(
-    (v) => v.size === size && v.color === color,
+    (v) =>
+      (!hasSizeAxis || v.size === size) && (!hasColorAxis || v.color === color),
   );
 
   if (isLoading) {
@@ -59,9 +94,13 @@ export default function ProductDetail() {
   const price = selectedVariant?.price ?? product.basePrice;
   const outOfStock = selectedVariant ? selectedVariant.stock <= 0 : false;
 
+  // Rótulos dos eixos configuráveis por produto (ex.: "Dimensões" / "Material").
+  const sizeLabel = product.customStyle?.sizeLabel?.trim() || "Tamanho";
+  const colorLabel = product.customStyle?.colorLabel?.trim() || "Cor";
+
   const handleAdd = () => {
     if (!selectedVariant) {
-      toast.error("Selecione tamanho e cor.");
+      toast.error("Selecione as opções do produto.");
       return;
     }
     if (selectedVariant.stock <= 0) {
@@ -75,7 +114,9 @@ export default function ProductDetail() {
         slug: product.slug,
         name: product.name,
         size: selectedVariant.size,
-        color: selectedVariant.color,
+        // Usa o eixo derivado (null quando ausente) para não vazar sentinelas
+        // como "N/A" de produtos ainda não sanitizados para o carrinho/pedido.
+        color: hasColorAxis ? selectedVariant.color : null,
         unitPrice: price,
         image: product.images[0]?.url ?? null,
         quantity: 1,
@@ -85,9 +126,12 @@ export default function ProductDetail() {
     toast.success("Adicionado ao carrinho!");
   };
 
-  // Para a cor selecionada, quais tamanhos têm estoque
-  const isComboAvailable = (s: string, c: string) =>
-    product.variants.some((v) => v.size === s && v.color === c && v.stock > 0);
+  // Para a cor selecionada, quais tamanhos têm estoque (ignora o eixo cor se ausente)
+  const isSizeAvailable = (s: string) =>
+    product.variants.some(
+      (v) =>
+        v.size === s && (!hasColorAxis || v.color === color) && v.stock > 0,
+    );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -158,47 +202,51 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Cor */}
-          <div className="mt-6">
-            <p className="mb-2 text-sm font-medium">Cor</p>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((c) => (
-                <Button
-                  key={c}
-                  type="button"
-                  variant={color === c ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setColor(c)}
-                  data-testid={`color-${c}`}
-                >
-                  {c}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Tamanho */}
-          <div className="mt-4">
-            <p className="mb-2 text-sm font-medium">Tamanho</p>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((s) => {
-                const available = !color || isComboAvailable(s, color);
-                return (
+          {/* Cor / Material — só aparece se o produto tiver esse eixo */}
+          {hasColorAxis && (
+            <div className="mt-6">
+              <p className="mb-2 text-sm font-medium">{colorLabel}</p>
+              <div className="flex flex-wrap gap-2">
+                {colors.map((c) => (
                   <Button
-                    key={s}
+                    key={c}
                     type="button"
-                    variant={size === s ? "default" : "outline"}
+                    variant={color === c ? "default" : "outline"}
                     size="sm"
-                    disabled={!available}
-                    onClick={() => setSize(s)}
-                    data-testid={`size-${s}`}
+                    onClick={() => setColor(c)}
+                    data-testid={`color-${c}`}
                   >
-                    {s}
+                    {c}
                   </Button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Tamanho / Dimensões — só aparece se o produto tiver esse eixo */}
+          {hasSizeAxis && (
+            <div className="mt-4">
+              <p className="mb-2 text-sm font-medium">{sizeLabel}</p>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((s) => {
+                  const available = isSizeAvailable(s);
+                  return (
+                    <Button
+                      key={s}
+                      type="button"
+                      variant={size === s ? "default" : "outline"}
+                      size="sm"
+                      disabled={!available}
+                      onClick={() => setSize(s)}
+                      data-testid={`size-${s}`}
+                    >
+                      {s}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <Button

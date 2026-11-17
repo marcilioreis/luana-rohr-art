@@ -37,7 +37,7 @@ async function createOrder(): Promise<number> {
 test.describe('Administração', () => {
   test('painel e listas carregam', async ({ page }) => {
     await page.goto('/admin');
-    await expect(page.getByText('Painel')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Painel' }).first()).toBeVisible();
     await page.goto('/admin/produtos');
     await expect(page.getByRole('heading', { name: 'Produtos' })).toBeVisible();
     await page.goto('/admin/pedidos');
@@ -61,7 +61,7 @@ test.describe('Administração', () => {
   test('relatórios de vendas carregam', async ({ page }) => {
     await page.goto('/admin/relatorios');
     await expect(page.getByRole('heading', { name: /Relatórios de vendas/i })).toBeVisible();
-    await expect(page.getByText('Faturamento')).toBeVisible();
+    await expect(page.getByText('Faturamento', { exact: true })).toBeVisible();
   });
 
   test('RBAC: cliente comum recebe 403 em rotas administrativas', async () => {

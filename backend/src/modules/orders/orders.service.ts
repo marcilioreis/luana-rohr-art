@@ -9,6 +9,16 @@ import type { OrderEnriched } from '../../shared/db/schema/views.types.js';
 import { buildOrderPix } from '../../shared/pix/pix.js';
 import { getShippingFee } from '../../shared/shipping/shipping.js';
 
+// Valores sentinela que significam "eixo de variação ausente" (compat. com
+// dados antigos cadastrados como "N/A" antes de a cor virar opcional).
+const NON_AXIS_VALUES = new Set(['', 'n/a', 'na', '-', '—', 'nao aplicavel', 'não aplicável']);
+const isRealAxisValue = (v?: string | null): v is string =>
+  v != null && !NON_AXIS_VALUES.has(v.trim().toLowerCase());
+
+// Monta o rótulo da variante (snapshot do pedido) descartando eixos vazios/sentinela.
+const buildVariantLabel = (size?: string | null, color?: string | null): string =>
+  [size, color].filter(isRealAxisValue).join(' / ');
+
 // ---- Mapeamento da view orders_enriched (top-level snake_case → camelCase) ----
 const mapRow = (row: Record<string, unknown>): OrderEnriched => ({
   id: row.id as number,
@@ -143,7 +153,7 @@ export const createOrder = async (customerId: string | null, payload: CheckoutPa
         productId: product.id,
         variantId: variant.id,
         productName: product.name,
-        variantLabel: `${variant.size} / ${variant.color}`,
+        variantLabel: buildVariantLabel(variant.size, variant.color),
         unitPrice,
         quantity: item.quantity,
         lineTotal,

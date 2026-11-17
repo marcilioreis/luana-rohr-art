@@ -20,11 +20,19 @@ export interface ProductVariant {
   id: number;
   productId: number;
   size: string;
-  color: string;
+  // Segundo eixo (cor/material). Opcional em peças únicas.
+  color: string | null;
   sku?: string | null;
   price?: number | null;
   stock: number;
   active: boolean;
+}
+
+// Rótulos dos eixos de variação, configuráveis por produto.
+// Guardados em products.customStyle (jsonb). Default: "Tamanho" / "Cor".
+export interface VariantAxisLabels {
+  sizeLabel?: string;
+  colorLabel?: string;
 }
 
 // Item de listagem (PLP)
@@ -52,6 +60,7 @@ export interface Product {
   featured?: boolean;
   collectionId?: number | null;
   tags?: string[] | null;
+  customStyle?: VariantAxisLabels | null;
   createdAt?: string;
   variants: ProductVariant[];
   images: ProductImage[];
@@ -72,13 +81,14 @@ export interface ProductPayload {
   featured?: boolean;
   collectionId?: number | null;
   tags?: string[];
+  customStyle?: VariantAxisLabels | null;
   variants?: VariantPayload[];
   images?: Array<{ url: string; alt?: string; order?: number }>;
 }
 
 export interface VariantPayload {
   size: string;
-  color: string;
+  color?: string | null;
   sku?: string;
   price?: number | null;
   stock: number;

@@ -36,6 +36,13 @@
       "when": 1793728407925,
       "tag": "0004_product_featured",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794930462752,
+      "tag": "0005_variant_color_nullable",
+      "breakpoints": true
     }
   ]
 }

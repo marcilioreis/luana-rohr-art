@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Loja pública', () => {
   test('home exibe destaques e navega para a loja', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /arte autoral/i })).toBeVisible();
-    await page.getByRole('link', { name: 'Ver a loja' }).click();
+    await expect(page.getByRole('heading', { name: /manifesto/i, level: 1 })).toBeVisible();
+    await page.getByRole('link', { name: 'Explorar obras' }).click();
     await expect(page).toHaveURL('/loja');
     await expect(page.getByTestId('product-grid')).toBeVisible();
   });
@@ -13,7 +13,7 @@ test.describe('Loja pública', () => {
   test('página Sobre carrega', async ({ page }) => {
     await page.goto('/sobre');
     await expect(page.getByRole('heading', { name: 'Luana Rohr', level: 1 })).toBeVisible();
-    await expect(page.getByText(/política cultural/i)).toBeVisible();
+    await expect(page.getByText(/políticas públicas de cultura/i)).toBeVisible();
   });
 
   test('PLP lista produtos e abre a PDP', async ({ page }) => {

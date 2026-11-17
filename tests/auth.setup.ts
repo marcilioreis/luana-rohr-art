@@ -27,6 +27,6 @@ setup('realizar login e salvar sessão', async ({ page }) => {
   await page.waitForURL((url) => !url.pathname.startsWith('/login'));
   // Confirma acesso à área administrativa
   await page.goto('/admin');
-  await expect(page.getByText('Painel')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Painel' }).first()).toBeVisible();
   await page.context().storageState({ path: STORAGE_STATE });
 });
