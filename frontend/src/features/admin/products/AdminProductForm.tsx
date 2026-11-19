@@ -53,6 +53,9 @@ export default function AdminProductForm({ product }: Props) {
   const [description, setDescription] = useState(product?.description ?? "");
   const [active, setActive] = useState(product?.active ?? true);
   const [featured, setFeatured] = useState(product?.featured ?? false);
+  const [priceOnRequest, setPriceOnRequest] = useState(
+    product?.priceOnRequest ?? false,
+  );
   const [collectionId, setCollectionId] = useState<number | null>(
     product?.collectionId ?? null,
   );
@@ -110,6 +113,7 @@ export default function AdminProductForm({ product }: Props) {
         description: description.trim() || null,
         active,
         featured,
+        priceOnRequest,
         collectionId,
         tags: parsedTags,
         customStyle: buildCustomStyle(),
@@ -136,6 +140,7 @@ export default function AdminProductForm({ product }: Props) {
           description: description.trim() || null,
           active,
           featured,
+          priceOnRequest,
           collectionId,
           tags: parsedTags,
           customStyle: buildCustomStyle(),
@@ -277,6 +282,20 @@ export default function AdminProductForm({ product }: Props) {
             Destaque na Home
             <span className="ml-1 font-normal text-muted-foreground">
               — aparece no hero da página inicial
+            </span>
+          </Label>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border bg-muted/30 p-3">
+          <Switch
+            checked={priceOnRequest}
+            onCheckedChange={setPriceOnRequest}
+            id="prod-price-on-request"
+            data-testid="prod-price-on-request"
+          />
+          <Label htmlFor="prod-price-on-request" className="cursor-pointer">
+            Preço sob consulta
+            <span className="ml-1 font-normal text-muted-foreground">
+              — esconde preço e carrinho; mostra botão do WhatsApp da artista
             </span>
           </Label>
         </div>

@@ -6,6 +6,8 @@ import type { ProductVariant } from "./products.types";
 import { useAppDispatch } from "@/app/hooks";
 import { addItem } from "../cart/cartSlice";
 import { formatBRL } from "@/utils/format";
+import { buildWhatsappLink, hasWhatsapp } from "@/utils/whatsapp";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/common/Skeleton";
@@ -182,7 +184,7 @@ export default function ProductDetail() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
           <p className="mt-2 text-2xl font-semibold text-brand-red">
-            {formatBRL(price)}
+            {product.priceOnRequest ? "Sob consulta" : formatBRL(price)}
           </p>
           {product.tags && product.tags.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -203,7 +205,7 @@ export default function ProductDetail() {
           )}
 
           {/* Cor / Material — só aparece se o produto tiver esse eixo */}
-          {hasColorAxis && (
+          {!product.priceOnRequest && hasColorAxis && (
             <div className="mt-6">
               <p className="mb-2 text-sm font-medium">{colorLabel}</p>
               <div className="flex flex-wrap gap-2">
@@ -224,7 +226,7 @@ export default function ProductDetail() {
           )}
 
           {/* Tamanho / Dimensões — só aparece se o produto tiver esse eixo */}
-          {hasSizeAxis && (
+          {!product.priceOnRequest && hasSizeAxis && (
             <div className="mt-4">
               <p className="mb-2 text-sm font-medium">{sizeLabel}</p>
               <div className="flex flex-wrap gap-2">
@@ -248,25 +250,55 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <div className="mt-6">
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleAdd}
-              disabled={outOfStock}
-              data-testid="add-to-cart"
-            >
-              {outOfStock ? "Sem estoque" : "Adicionar ao carrinho"}
-            </Button>
-            {selectedVariant && (
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                {selectedVariant.stock} em estoque
+          {product.priceOnRequest ? (
+            <div className="mt-6">
+              {hasWhatsapp ? (
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full bg-[#25D366] text-white hover:bg-[#1da851]"
+                  data-testid="whatsapp-cta"
+                >
+                  <a
+                    href={buildWhatsappLink(product.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Consultar valor no WhatsApp
+                  </a>
+                </Button>
+              ) : (
+                <p className="text-center text-sm text-muted-foreground">
+                  Entre em contato para consultar o valor desta obra.
+                </p>
+              )}
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                Peça sob consulta · valor e condições combinados diretamente com
+                a artista
               </p>
-            )}
-            <p className="mt-3 text-center text-xs text-muted-foreground">
-              PIX à vista · entrega pelos Correios ou retirada combinada
-            </p>
-          </div>
+            </div>
+          ) : (
+            <div className="mt-6">
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleAdd}
+                disabled={outOfStock}
+                data-testid="add-to-cart"
+              >
+                {outOfStock ? "Sem estoque" : "Adicionar ao carrinho"}
+              </Button>
+              {selectedVariant && (
+                <p className="mt-2 text-center text-xs text-muted-foreground">
+                  {selectedVariant.stock} em estoque
+                </p>
+              )}
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                PIX à vista · entrega pelos Correios ou retirada combinada
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

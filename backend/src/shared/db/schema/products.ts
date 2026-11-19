@@ -36,6 +36,8 @@ export const products = pgTable('products', {
   active: boolean('active').default(true).notNull(),
   // Produto em destaque no hero da Home (admin escolhe)
   featured: boolean('featured').default(false).notNull(),
+  // Preço sob consulta: esconde preço + compra e direciona ao WhatsApp da artista
+  priceOnRequest: boolean('price_on_request').default(false).notNull(),
   // Coleção curatorial (nullable: produto pode não pertencer a nenhuma)
   collectionId: integer('collection_id').references(() => collections.id, {
     onDelete: 'set null',

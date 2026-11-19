@@ -26,7 +26,9 @@ export default function ProductCard({ product }: { product: ProductListItem }) {
             {product.name}
           </h3>
           <p className="mt-2 text-lg font-semibold text-brand-red">
-            {formatBRL(product.basePrice)}
+            {product.priceOnRequest
+              ? "Sob consulta"
+              : formatBRL(product.basePrice)}
           </p>
         </CardContent>
       </Card>

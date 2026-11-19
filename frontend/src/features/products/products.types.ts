@@ -44,6 +44,7 @@ export interface ProductListItem {
   basePrice: number;
   active: boolean;
   featured?: boolean;
+  priceOnRequest?: boolean;
   collectionId?: number | null;
   tags?: string[] | null;
   image: ProductImage | null;
@@ -58,6 +59,7 @@ export interface Product {
   basePrice: number;
   active: boolean;
   featured?: boolean;
+  priceOnRequest?: boolean;
   collectionId?: number | null;
   tags?: string[] | null;
   customStyle?: VariantAxisLabels | null;
@@ -79,6 +81,7 @@ export interface ProductPayload {
   basePrice: number;
   active?: boolean;
   featured?: boolean;
+  priceOnRequest?: boolean;
   collectionId?: number | null;
   tags?: string[];
   customStyle?: VariantAxisLabels | null;

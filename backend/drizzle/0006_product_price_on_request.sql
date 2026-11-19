@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "price_on_request" boolean DEFAULT false NOT NULL;
