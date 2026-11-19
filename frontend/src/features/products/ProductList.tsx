@@ -39,13 +39,13 @@ export default function ProductList() {
           <p className="mt-1 text-muted-foreground">
             {collection
               ? (collection.subtitle ?? "")
-              : "Camisetas com arte exclusiva de Luana Rohr"}
+              : "Arte exclusiva de Luana Rohr"}
           </p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar camisetas..."
+            placeholder="Buscar..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -97,7 +97,7 @@ export default function ProductList() {
           <p className="text-muted-foreground">
             {collection
               ? "Ainda não há peças nesta coleção."
-              : "Nenhuma camiseta encontrada."}
+              : "Nenhuma peça encontrada."}
           </p>
           {collection && (
             <Button
@@ -105,7 +105,7 @@ export default function ProductList() {
               className="mt-4"
               onClick={() => setColecao(null)}
             >
-              Ver todas as camisetas
+              Ver tudo
             </Button>
           )}
         </div>

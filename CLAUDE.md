@@ -63,16 +63,18 @@ recreating it (the CREATE VIEW lives at the end of the generated migration, afte
 ```
 src/
   modules/
-    products/        # PLP/PDP público + CRUD/variantes/imagens (admin, RBAC product:manage)
-    orders/          # checkout (gera PIX), meus pedidos, gestão de status (admin, order:manage), export
+    products/        # PLP/PDP público + CRUD/variantes/imagens + coleções + produto em destaque (admin, RBAC product:manage)
+    orders/          # checkout (gera PIX; convidado ou logado), entrega (frete por UF / retirada), meus pedidos, gestão de status (admin, order:manage), export
     admin/           # usuários, papéis, audit logs
   shared/
     auth/            # Better Auth config + authenticate middleware
     db/              # Drizzle client (db), schema/index.ts
+    email/           # nodemailer (confirmação de pedido; Ethereal em dev)
     middleware/      # loadPermissions, rbac (authorize), validate (validateBody)
     pix/             # buildPixPayload (EMV TLV) + crc16 (CCITT) — sem gateway
     queue/           # BullMQ export.queue.ts + export.worker.ts (fila "order-exports")
     redis/           # ioredis client + cache helpers
+    shipping/        # cálculo de frete por UF + opção de retirada
     storage/         # Pluggable storage (local em dev, Cloudflare R2 em prod)
     validation/      # Zod schemas (schemas.ts)
   graphql/           # Apollo Server (relatórios de vendas)
@@ -132,9 +134,17 @@ carregado uma vez por `SessionBootstrap` na raiz e consumido por `ProtectedRoute
   checadas no `orders.service` (`isValidTransition`). Cancelar devolve o estoque.
 - **Estoque por variante**: a baixa de estoque no checkout é atômica (`UPDATE ... WHERE stock >= qty`)
   e nunca fica negativa; estoque insuficiente → 409.
+- **Checkout convidado**: pedido pode ser criado sem login (`orders.customerId` nullable). O pedido
+  de convidado é consultado por um `access_token` único (coluna `orders.access_token`), não por sessão.
+- **Frete / entrega**: **server-authoritative** — o valor de frete enviado pelo cliente é ignorado e
+  recalculado em `shared/shipping/shipping.ts` a partir da UF do endereço (tarifa por região; retirada
+  = sem frete). Mude as tarifas em `SHIPPING_FEES`.
 - **PIX**: payload EMV TLV + **CRC16-CCITT** implementados à mão em `shared/pix/pix.ts`
-  (campos 00/26 `br.gov.bcb.pix`+chave/52/53/54 valor/58/59/60/62 txid/63 CRC). Chave e recebedor
-  vêm de env (`PIX_KEY`, `PIX_MERCHANT_NAME`, `PIX_MERCHANT_CITY`). O QR é renderizado no frontend.
+  (campos 00/01 `11` estático/26 `br.gov.bcb.pix`+chave/52/53/54 valor/58/59/60/62 txid/63 CRC).
+  Point of Initiation é `11` (estático; `12` dinâmico exigiria URL de PSP). Chave e recebedor vêm de
+  env (`PIX_KEY` deve ser chave DICT **real** — o default é fake; `PIX_MERCHANT_NAME`,
+  `PIX_MERCHANT_CITY`). O `pixPayload` é **gravado por pedido** (mudanças só valem p/ pedidos novos).
+  O QR é renderizado no frontend.
 - **Export de pedidos** via BullMQ (`export.queue.ts` / `export.worker.ts`, fila `order-exports`).
   O frontend faz polling de `GET /api/orders/exports/:id/status` até concluir e baixa o arquivo.
 - **Relatórios de vendas** via GraphQL (`salesSummary`, `ordersByStatus`, `topProducts`,

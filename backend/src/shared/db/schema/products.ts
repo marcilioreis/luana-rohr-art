@@ -26,7 +26,7 @@ export const collections = pgTable('collections', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
-// ========== PRODUTOS (camisetas) ==========
+// ========== PRODUTOS (camisetas/obras autorais) ==========
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 200 }).notNull(),

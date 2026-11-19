@@ -1,7 +1,7 @@
 {
   "name": "luana-rohr-art",
   "version": "1.0.0",
-  "description": "Loja virtual de camisetas com arte autoral de Luana Rohr (checkout via PIX copia e cola).",
+  "description": "Loja virtual com arte autoral de Luana Rohr.",
   "main": "index.js",
   "directories": {
     "test": "tests"

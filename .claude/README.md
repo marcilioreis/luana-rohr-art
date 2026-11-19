@@ -1,7 +1,7 @@
 # Setup de Claude Code — Luana Rohr Art
 
 Configuração de desenvolvimento para usar o Claude Code neste monorepo
-(`backend/`, `frontend/`, `tests/`) da loja de camisetas **Luana Rohr Art**.
+(`backend/`, `frontend/`, `tests/`) da loja de arte autoral **Luana Rohr Art**.
 Tudo aqui é versionável e compartilhável com o time.
 
 ## O que vem incluído

@@ -1,4 +1,4 @@
-# HANDOVER — Luana Rohr Art (loja de camisetas)
+# HANDOVER — Luana Rohr Art (loja de arte autoral)
 
 > **Como usar:** abra uma **nova sessão do Claude Code com o working directory na raiz deste
 > repositório** (`luana-rohr-art`, o repositório real do projeto — não o `hajel-survey-platform`
@@ -9,7 +9,7 @@
 
 ## PROMPT PARA O AGENTE
 
-Você está no repositório **luana-rohr-art**: uma loja virtual de camisetas com arte autoral,
+Você está no repositório **luana-rohr-art**: uma loja virtual com arte autoral,
 **já implementada, testada e versionada** (clonada de `github.com/marcilioreis/luana-rohr-art`).
 Leia primeiro o `CLAUDE.md` da raiz — ele descreve toda a arquitetura (módulos `products`/`orders`,
 PIX EMV+CRC16, view `orders_enriched`, RBAC `product:manage`/`order:manage`, BullMQ `order-exports`,

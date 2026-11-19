@@ -1,7 +1,7 @@
-# Luana Rohr Art — Loja de Camisetas
+# Luana Rohr Art — Loja de Arte autoral
 
 ## Visão Geral
-Loja virtual de camisetas com arte autoral de **Luana Rohr**. Os clientes navegam pela
+Loja virtual com arte autoral de **Luana Rohr**. Os clientes navegam pela
 vitrine (Home), conhecem a artista (Sobre), exploram o catálogo (PLP), abrem o detalhe do
 produto (PDP), adicionam ao carrinho e finalizam a compra no checkout.
 

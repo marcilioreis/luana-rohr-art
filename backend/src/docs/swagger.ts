@@ -7,7 +7,7 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: 'Luana Rohr Art — Loja API',
       version: '1.0.0',
-      description: 'Documentação da API da loja virtual de camisetas',
+      description: 'Documentação da API da loja virtual de arte autoral de Luana Rohr',
     },
     servers: [
       {

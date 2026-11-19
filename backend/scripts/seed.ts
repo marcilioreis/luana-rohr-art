@@ -51,10 +51,7 @@ async function seed() {
   ];
 
   console.log('📌 Inserindo papéis...');
-  await db
-    .insert(schema.roles)
-    .values(roleData)
-    .onConflictDoNothing({ target: schema.roles.name });
+  await db.insert(schema.roles).values(roleData).onConflictDoNothing({ target: schema.roles.name });
   const insertedRoles = await db.select().from(schema.roles);
 
   const getPermissionId = (code: string) => insertedPermissions.find((p) => p.code === code)?.id;
@@ -152,7 +149,7 @@ async function seed() {
   const collectionId = (slug: string | null) =>
     slug ? (insertedCollections.find((c) => c.slug === slug)?.id ?? null) : null;
 
-  // 4. Produtos de exemplo (camisetas)
+  // 4. Produtos de exemplo
   console.log('👕 Inserindo produtos de exemplo...');
   const sampleProducts = [
     {
@@ -203,7 +200,7 @@ async function seed() {
         description: p.description,
         basePrice: p.basePrice,
         active: true,
-        featured: "featured" in p ? Boolean(p.featured) : false,
+        featured: 'featured' in p ? Boolean(p.featured) : false,
         collectionId: collectionId(p.collection),
         tags: p.tags,
         createdBy: adminId,
