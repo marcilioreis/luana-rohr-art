@@ -205,7 +205,7 @@ export default function ProductDetail() {
           )}
 
           {/* Cor / Material — só aparece se o produto tiver esse eixo */}
-          {!product.priceOnRequest && hasColorAxis && (
+          {hasColorAxis && (
             <div className="mt-6">
               <p className="mb-2 text-sm font-medium">{colorLabel}</p>
               <div className="flex flex-wrap gap-2">
@@ -226,7 +226,7 @@ export default function ProductDetail() {
           )}
 
           {/* Tamanho / Dimensões — só aparece se o produto tiver esse eixo */}
-          {!product.priceOnRequest && hasSizeAxis && (
+          {hasSizeAxis && (
             <div className="mt-4">
               <p className="mb-2 text-sm font-medium">{sizeLabel}</p>
               <div className="flex flex-wrap gap-2">

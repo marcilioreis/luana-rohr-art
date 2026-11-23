@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Mandala } from "@/components/brand/Mandala";
 import { Button } from "@/components/ui/button";
+import { buildWhatsappLink } from "@/utils/whatsapp";
+import { MessageCircle } from "lucide-react";
 
 export default function AboutPage() {
   return (
@@ -90,6 +92,21 @@ export default function AboutPage() {
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <Button asChild>
               <Link to="/loja">Ver a loja</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              className="bg-[#25D366] text-white hover:bg-[#1da851]"
+              data-testid="whatsapp-cta"
+            >
+              <a
+                href={buildWhatsappLink("Luana Rohr Art")}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="mr-2 h-5 w-5" />
+                WhatsApp
+              </a>
             </Button>
             <a
               href="https://www.instagram.com/luanarohrart/"
