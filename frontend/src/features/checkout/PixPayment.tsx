@@ -62,6 +62,8 @@ export default function PixPayment({ order }: { order: Order }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* bg-white literal de propósito: o QR precisa de zona de silêncio
+              clara para ser lido, inclusive no tema escuro. */}
           {order.pixPayload && (
             <div className="flex justify-center rounded-lg bg-white p-4">
               <QRCodeCanvas

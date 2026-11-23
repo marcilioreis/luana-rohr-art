@@ -8,6 +8,23 @@
   <meta name="theme-color" content="#243C8C" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Luana Rohr Art — Do que me atravessa, faço arte</title>
+  <script>
+    // Anti-flash: aplica o tema antes da primeira pintura, senão a tela
+    // pisca em branco até o React montar. A chave repete THEME_STORAGE_KEY
+    // de src/lib/theme.ts.
+    (function () {
+      try {
+        var stored = localStorage.getItem('lra-theme');
+        var isDark =
+          stored === 'dark' ||
+          ((stored === null || stored === 'system') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+      } catch (e) {
+        // localStorage bloqueado: segue no tema claro
+      }
+    })();
+  </script>
 </head>
 
 <body>

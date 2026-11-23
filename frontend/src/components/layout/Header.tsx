@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 import { Menu, User, LogOut, Store } from "lucide-react";
 import { AppSidebar } from "./AppSidebar";
 
@@ -47,6 +48,7 @@ export default function Header() {
         <div className="hidden md:block" />
 
         <div className="flex items-center gap-2">
+          <ThemeToggle className="rounded-full" />
           <Link
             to="/"
             className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-foreground"

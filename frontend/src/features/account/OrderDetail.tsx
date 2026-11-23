@@ -62,6 +62,8 @@ export default function OrderDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+            {/* bg-white literal de propósito: o QR precisa de zona de silêncio
+                clara para ser lido, inclusive no tema escuro. */}
             <div className="rounded-lg bg-white p-3">
               <QRCodeCanvas value={order.pixPayload} size={140} />
             </div>

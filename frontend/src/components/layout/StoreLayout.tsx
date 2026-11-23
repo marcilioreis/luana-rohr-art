@@ -5,6 +5,7 @@ import { selectCartCount } from "@/features/cart/cartSlice";
 import CartDrawer from "@/features/cart/CartDrawer";
 import { Mandala, MandalaStar } from "@/components/brand/Mandala";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 import { ShoppingBag, User } from "lucide-react";
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -65,6 +66,7 @@ export default function StoreLayout() {
           </nav>
 
           <div className="flex items-center gap-1">
+            <ThemeToggle />
             <Link
               to={isAuthenticated ? "/conta/pedidos" : "/login"}
               className="rounded-full p-2 text-muted-foreground hover:bg-accent hover:text-foreground"

@@ -38,7 +38,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1">
           <div className="mb-2 text-center">
@@ -82,7 +82,7 @@ export default function Login() {
             </div>
             {errorMsg && (
               <p
-                className="text-sm text-red-600 bg-red-50 p-2 rounded"
+                className="text-sm text-destructive bg-destructive/10 p-2 rounded"
                 data-testid="login-error"
               >
                 {errorMsg}

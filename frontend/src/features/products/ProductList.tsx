@@ -134,7 +134,7 @@ function Chip({
         "border px-4 py-1.5 text-sm transition-colors",
         active
           ? accent === "red"
-            ? "border-brand-red bg-brand-red text-white"
+            ? "border-brand-red bg-brand-red text-brand-red-foreground"
             : "border-primary bg-primary text-primary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
       )}

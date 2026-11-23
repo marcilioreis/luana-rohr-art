@@ -22,10 +22,10 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
           <div className="text-center">
-            <h1 className="text-xl font-bold text-gray-800 mb-2">
+            <h1 className="text-xl font-bold text-foreground mb-2">
               Ops! Algo deu errado
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Por favor, recarregue a página ou tente novamente mais tarde.
             </p>
           </div>

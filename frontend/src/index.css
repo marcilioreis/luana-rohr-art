@@ -13,6 +13,8 @@
    ============================================================================ */
 
 :root {
+  color-scheme: light;
+
   /* Neutros quentes (papel/tinta) */
   --background: oklch(0.985 0.006 83); /* papel #FAF8F4 */
   --foreground: oklch(0.19 0.012 285); /* tinta */
@@ -36,18 +38,21 @@
 
   /* Vermelho de acento (preço, tags, manifesto) e destructive */
   --brand-red: oklch(0.56 0.2 28); /* vermelhão #C73A2B */
+  --brand-red-foreground: oklch(0.985 0.006 83); /* papel sobre o vermelho */
   --destructive: oklch(0.55 0.2 27);
 
   --border: oklch(0.9 0.008 83);
   --input: oklch(0.9 0.008 83);
   --ring: oklch(0.42 0.14 263);
 
-  /* Gráficos (Recharts): azul → vermelho + neutros */
+  /* Gráficos (Recharts): azul → vermelho + neutros.
+     Espelhados como literais em lib/chart-colors.ts — mudou aqui, mude lá. */
   --chart-1: oklch(0.42 0.14 263); /* azul */
   --chart-2: oklch(0.56 0.2 28); /* vermelho */
   --chart-3: oklch(0.6 0.08 230); /* azul claro */
   --chart-4: oklch(0.72 0.11 55); /* âmbar */
   --chart-5: oklch(0.5 0.02 285); /* neutro */
+  --chart-6: oklch(0.52 0.12 155); /* verde (status pago) */
 
   /* --radius: 0.625rem; */
   --radius: 0;
@@ -64,8 +69,10 @@
 }
 
 .dark {
-  /* Variante "tinta" (azul-escuro) — ainda não há toggle; tokens prontos p/ fase futura */
-  --background: oklch(0.2 0.018 275);
+  /* Variante "tinta" (azul-escuro). Alternada pelo ThemeProvider. */
+  color-scheme: dark;
+
+  --background: oklch(0.2 0.018 275); /* ≈ #14161E — espelhado em lib/theme.ts */
   --foreground: oklch(0.96 0.006 83);
   --card: oklch(0.24 0.02 275);
   --card-foreground: oklch(0.96 0.006 83);
@@ -84,6 +91,8 @@
   --accent-foreground: oklch(0.96 0.006 83);
 
   --brand-red: oklch(0.68 0.19 28);
+  /* No escuro o vermelho clareia: texto escuro contrasta melhor que o papel */
+  --brand-red-foreground: oklch(0.2 0.018 275);
   --destructive: oklch(0.65 0.19 25);
 
   --border: oklch(1 0 0 / 12%);
@@ -95,6 +104,7 @@
   --chart-3: oklch(0.6 0.08 230);
   --chart-4: oklch(0.72 0.11 55);
   --chart-5: oklch(0.7 0.02 285);
+  --chart-6: oklch(0.72 0.13 158);
 
   --sidebar: oklch(0.24 0.02 275);
   --sidebar-foreground: oklch(0.96 0.006 83);
@@ -126,6 +136,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-brand-red: var(--brand-red);
+  --color-brand-red-foreground: var(--brand-red-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -135,6 +146,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -168,7 +180,6 @@
   }
   html {
     @apply font-sans;
-    color-scheme: light;
   }
   /* Títulos editoriais (galeria). Escopo global, refinável por página depois. */
   h1,

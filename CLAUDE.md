@@ -116,6 +116,13 @@ src/
 **Session**: `GET /api/auth/get-session` retorna `{ user, session, permissions, roles }`,
 carregado uma vez por `SessionBootstrap` na raiz e consumido por `ProtectedRoute`/`AdminRoute`.
 **Carrinho**: client-side em localStorage (`cartSlice`).
+**Tema (claro/escuro)**: `ThemeProvider` (`components/theme/`) guarda a preferência em
+localStorage (`lra-theme`: `light` | `dark` | `system`) e alterna a classe `.dark` no `<html>`;
+o script anti-flash em `index.html` aplica a classe antes da primeira pintura (repete a chave
+literalmente). **Nunca use cor fixa** (`bg-white`, `text-gray-600`) — só tokens (`bg-card`,
+`text-muted-foreground`). Exceções deliberadas: o fundo branco do QR PIX (zona de silêncio) e o
+verde do WhatsApp. Gráficos Recharts não resolvem `var()` em atributo SVG: use `useChartColors()`
+de `lib/chart-colors.ts`, que espelha os tokens `--chart-*`.
 
 ## Code Conventions
 

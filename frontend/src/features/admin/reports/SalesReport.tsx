@@ -3,6 +3,12 @@ import PageLoader from "@/components/common/PageLoader";
 import { ORDER_STATUS_LABELS } from "../../account/orders.types";
 import type { OrderStatus } from "../../account/orders.types";
 import { formatBRL } from "@/utils/format";
+import {
+  CHART_TOOLTIP_LABEL_STYLE,
+  CHART_TOOLTIP_STYLE,
+  useChartColors,
+  type ChartColors,
+} from "@/lib/chart-colors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -23,18 +29,18 @@ import {
   Cell,
 } from "recharts";
 
-// Paleta categórica sóbria e acessível
-const ACCENT = "#7c5cff";
-const STATUS_COLORS: Record<string, string> = {
-  aguardando_pagamento: "#d4a72c",
-  pago: "#2f9e6f",
-  enviado: "#3b82c4",
-  entregue: "#6b7280",
-  cancelado: "#c1544a",
+// Cores vêm dos tokens do tema (claro/escuro) — ver lib/chart-colors.ts
+const STATUS_COLOR_KEYS: Record<string, keyof ChartColors> = {
+  aguardando_pagamento: "amber",
+  pago: "green",
+  enviado: "lightBlue",
+  entregue: "neutral",
+  cancelado: "red",
 };
 
 export default function SalesReport() {
   const { data, isLoading, isError } = useGetSalesReportQuery();
+  const colors = useChartColors();
 
   if (isLoading) return <PageLoader label="Carregando relatórios…" />;
   if (isError || !data)
@@ -49,7 +55,7 @@ export default function SalesReport() {
   const statusData = ordersByStatus.map((s) => ({
     ...s,
     label: ORDER_STATUS_LABELS[s.status as OrderStatus] ?? s.status,
-    color: STATUS_COLORS[s.status] ?? ACCENT,
+    color: colors[STATUS_COLOR_KEYS[s.status] ?? "blue"],
   }));
 
   return (
@@ -94,19 +100,24 @@ export default function SalesReport() {
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="#e5e7eb"
+                  stroke={colors.grid}
                 />
                 <XAxis
                   dataKey="period"
                   tick={{ fontSize: 12 }}
-                  stroke="#9ca3af"
+                  stroke={colors.axis}
                 />
-                <YAxis tick={{ fontSize: 12 }} stroke="#9ca3af" />
-                <Tooltip formatter={(value) => formatBRL(Number(value))} />
+                <YAxis tick={{ fontSize: 12 }} stroke={colors.axis} />
+                <Tooltip
+                  formatter={(value) => formatBRL(Number(value))}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                  cursor={{ fill: colors.grid }}
+                />
                 <Bar
                   dataKey="revenue"
                   name="Faturamento"
-                  fill={ACCENT}
+                  fill={colors.blue}
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -136,12 +147,12 @@ export default function SalesReport() {
                   <CartesianGrid
                     strokeDasharray="3 3"
                     horizontal={false}
-                    stroke="#e5e7eb"
+                    stroke={colors.grid}
                   />
                   <XAxis
                     type="number"
                     tick={{ fontSize: 12 }}
-                    stroke="#9ca3af"
+                    stroke={colors.axis}
                     allowDecimals={false}
                   />
                   <YAxis
@@ -149,9 +160,13 @@ export default function SalesReport() {
                     dataKey="label"
                     width={110}
                     tick={{ fontSize: 12 }}
-                    stroke="#9ca3af"
+                    stroke={colors.axis}
                   />
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                    cursor={{ fill: colors.grid }}
+                  />
                   <Bar dataKey="count" name="Pedidos" radius={[0, 4, 4, 0]}>
                     {statusData.map((s) => (
                       <Cell key={s.status} fill={s.color} />
