@@ -15,6 +15,8 @@ import { useTheme, type ResolvedTheme } from "./theme";
 export interface ChartColors {
   grid: string;
   axis: string;
+  /** Realce da faixa sob o cursor — bem translúcido, senão briga com a barra. */
+  cursor: string;
   blue: string;
   red: string;
   lightBlue: string;
@@ -27,6 +29,7 @@ const PALETTES: Record<ResolvedTheme, ChartColors> = {
   light: {
     grid: "oklch(0.9 0.008 83)", // --border
     axis: "oklch(0.52 0.015 290)", // --muted-foreground
+    cursor: "oklch(0.19 0.012 285 / 7%)",
     blue: "oklch(0.42 0.14 263)", // --chart-1
     red: "oklch(0.56 0.2 28)", // --chart-2
     lightBlue: "oklch(0.6 0.08 230)", // --chart-3
@@ -37,6 +40,7 @@ const PALETTES: Record<ResolvedTheme, ChartColors> = {
   dark: {
     grid: "oklch(1 0 0 / 18%)",
     axis: "oklch(0.72 0.02 280)",
+    cursor: "oklch(1 0 0 / 9%)",
     blue: "oklch(0.72 0.12 258)",
     red: "oklch(0.68 0.19 28)",
     lightBlue: "oklch(0.6 0.08 230)",

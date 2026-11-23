@@ -112,7 +112,7 @@ export default function SalesReport() {
                   formatter={(value) => formatBRL(Number(value))}
                   contentStyle={CHART_TOOLTIP_STYLE}
                   labelStyle={CHART_TOOLTIP_LABEL_STYLE}
-                  cursor={{ fill: colors.grid }}
+                  cursor={{ fill: colors.cursor }}
                 />
                 <Bar
                   dataKey="revenue"
@@ -165,7 +165,7 @@ export default function SalesReport() {
                   <Tooltip
                     contentStyle={CHART_TOOLTIP_STYLE}
                     labelStyle={CHART_TOOLTIP_LABEL_STYLE}
-                    cursor={{ fill: colors.grid }}
+                    cursor={{ fill: colors.cursor }}
                   />
                   <Bar dataKey="count" name="Pedidos" radius={[0, 4, 4, 0]}>
                     {statusData.map((s) => (
