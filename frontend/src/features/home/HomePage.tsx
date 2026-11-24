@@ -10,6 +10,11 @@ import {
   MandalaStar,
   MandalaFlower,
 } from "@/components/brand/Mandala";
+import { SpinningMandala } from "@/components/brand/SpinningMandala";
+import { MandalaDivider } from "@/components/brand/MandalaDivider";
+import { Reveal } from "@/components/common/Reveal";
+import { CursorGlow } from "@/components/effects/CursorGlow";
+import { useParallax } from "@/lib/useParallax";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
 import { cn } from "@/lib/utils";
@@ -22,14 +27,26 @@ export default function HomePage() {
   // Destaque escolhido no admin; fallback para o produto mais recente.
   const featured = featuredProduct ?? highlights[0];
 
+  // Efeito 1 — parallax do hero (só desktop). A mandala decorativa é a "camada
+  // de fundo"; a obra em destaque e os CTAs ficam fixos (1x). strength ~0.08
+  // aproxima "0.3x do scroll", limitado a 40px.
+  const heroParallax = useParallax<HTMLDivElement>({ strength: 0.08, max: 40 });
+
   return (
     <div>
+      <CursorGlow />
       {/* Hero — artwork-forward */}
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-accent/40 to-background">
-        <MandalaFlower
-          strokeWidth={1.5}
-          className="pointer-events-none absolute -left-50 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 text-brand-red/40 -z-1"
-        />
+        {/* Wrapper externo centraliza; o ref interno recebe o translate3d do
+            parallax (sem brigar com o -translate-y-1/2 de centralização). */}
+        <div className="pointer-events-none absolute -left-50 top-1/2 h-[30rem] w-[30rem] -translate-y-1/2 -z-1">
+          <div ref={heroParallax} className="h-full w-full">
+            <MandalaFlower
+              strokeWidth={1.5}
+              className="h-full w-full text-brand-red/40"
+            />
+          </div>
+        </div>
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
           <div className="text-center md:text-left">
             <h1 className="text-4xl font-medium tracking-tight md:text-5xl">
@@ -71,7 +88,7 @@ export default function HomePage() {
       </section>
 
       {/* Coleções curatoriais */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
+      <Reveal as="section" className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-medium tracking-tight">Coleções</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -108,10 +125,10 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       {/* Destaques */}
-      <section className="mx-auto max-w-6xl px-4 pb-16">
+      <Reveal as="section" className="mx-auto max-w-6xl px-4 pb-16">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-medium tracking-tight">Destaques</h2>
           <Link to="/loja" className="text-sm text-primary hover:underline">
@@ -126,19 +143,25 @@ export default function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {highlights.map((p) => (
-              <ProductCard key={p.id} product={p} />
+            {highlights.map((p, i) => (
+              // Reveal + stagger de 80ms por card
+              <Reveal key={p.id} delay={i * 80} className="h-full">
+                <ProductCard product={p} />
+              </Reveal>
             ))}
           </div>
         )}
-      </section>
+      </Reveal>
+
+      {/* Efeito 6 — separador mandálico entre "Destaques" e o manifesto */}
+      <MandalaDivider />
 
       {/* Faixa manifesto */}
       <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <MandalaFlower
-          strokeWidth={1.5}
-          className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 text-primary-foreground/10"
-        />
+        {/* Efeito 2 — marca d'água girando ultra-lento (azul-claro, 10% herdado) */}
+        <SpinningMandala className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 text-primary-foreground/10">
+          <MandalaFlower strokeWidth={1.5} className="h-full w-full" />
+        </SpinningMandala>
         <div className="mx-auto max-w-4xl px-4 py-16 text-center">
           <p className="font-heading text-2xl leading-snug md:text-3xl">
             “Do que me atravessa, faço arte.”
@@ -147,7 +170,7 @@ export default function HomePage() {
       </section>
 
       {/* A artista + Instagram */}
-      <section className="border-t bg-accent/20">
+      <Reveal as="section" className="border-t bg-accent/20">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-16 md:grid-cols-2">
           <div className="text-center md:text-left">
             <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -179,7 +202,7 @@ export default function HomePage() {
             </a>
           </div>
         </div>
-      </section>
+      </Reveal>
     </div>
   );
 }

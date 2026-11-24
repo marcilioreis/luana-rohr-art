@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useGetProductsQuery, useGetCollectionsQuery } from "./productsApi";
 import ProductCard from "./ProductCard";
+import { Reveal } from "@/components/common/Reveal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/common/Skeleton";
@@ -88,8 +89,11 @@ export default function ProductList() {
           className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4"
           data-testid="product-grid"
         >
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            // Reveal + stagger de 80ms (limitado a 6 passos p/ não atrasar demais)
+            <Reveal key={p.id} delay={Math.min(i, 6) * 80} className="h-full">
+              <ProductCard product={p} />
+            </Reveal>
           ))}
         </div>
       ) : (

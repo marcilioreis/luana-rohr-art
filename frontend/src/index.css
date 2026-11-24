@@ -191,3 +191,140 @@
     letter-spacing: -0.015em;
   }
 }
+
+/* ============================================================================
+   Camada de efeitos visuais sutis — "respiração da página"
+   Orgânicos, lentos e periféricos. Todos opcionais/reversíveis: sem JS ou com
+   prefers-reduced-motion, o conteúdo fica 100% visível e estático.
+   Só `transform` e `opacity` animam. Ajuste os parâmetros nos comentários.
+   ============================================================================ */
+@layer base {
+  /* 3 · Reveal ao entrar na viewport ----------------------------------------
+     out → in: opacity 0→1 + translateY 16px→0, 400ms ease-out.
+     No-JS: elementos .reveal não recebem [data-reveal] → ficam visíveis.
+     Stagger entre cards: --reveal-delay = 80ms × índice (definido no TSX). */
+  .reveal[data-reveal="out"] {
+    opacity: 0;
+    transform: translateY(16px); /* deslocamento inicial */
+  }
+  .reveal[data-reveal="in"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 400ms ease-out,
+      transform 400ms ease-out; /* duração do reveal */
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* 2 · Mandala de fundo — rotação contínua ultra-lenta ----------------------
+     120s por volta (2 min) → quase estática. Opacidade vem do token do TSX
+     (text-primary/5 etc.) — nunca elevar. JS pausa (.is-paused) fora da
+     viewport / aba oculta e gerencia will-change. */
+  @keyframes lra-mandala-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .mandala-spin {
+    display: inline-flex;
+    animation: lra-mandala-spin 120s linear infinite; /* velocidade da rotação */
+  }
+  .mandala-spin.is-paused {
+    animation-play-state: paused;
+  }
+
+  /* 6 · Separador mandálico — desenho do traço (opcional) --------------------
+     stroke-dasharray/offset desenhando em 1200ms ao entrar na viewport (1×). */
+  .mandala-divider svg :is(circle, ellipse, path) {
+    transition:
+      stroke-dashoffset 1200ms ease-in-out,
+      opacity 1200ms ease-in-out; /* duração do desenho */
+  }
+  .mandala-divider[data-draw="out"] svg :is(circle, ellipse, path) {
+    stroke-dasharray: 320; /* comprimento aproximado do traço p/ o dash */
+    stroke-dashoffset: 320;
+    opacity: 0;
+  }
+  .mandala-divider[data-draw="in"] svg :is(circle, ellipse, path) {
+    stroke-dasharray: 320;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  /* 7 · Glow radial seguindo o cursor (desktop/opcional) ---------------------
+     Raio ~400px (box 800px), azul no máx. 5%, easing 200ms. pointer-events:none
+     → nunca bloqueia clique. Posição definida por translate3d no JS. */
+  .cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 800px; /* raio efetivo ~400px */
+    height: 800px;
+    pointer-events: none;
+    opacity: 0; /* revelado no 1º mousemove */
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--primary) 5%, transparent) 0%,
+      transparent 60%
+    );
+    transition: transform 200ms ease-out; /* easing do rastro */
+  }
+
+  /* 5 · Hover sutil em cards de obra/camiseta --------------------------------
+     Zoom 1.02 (400ms ease-out) + leve elevação azul (6%). Só ponteiro fino. */
+  .art-card__img {
+    transition: transform 400ms ease-out; /* duração do zoom */
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .art-card {
+      transition: box-shadow 400ms ease-out;
+    }
+    .art-card:hover {
+      box-shadow: 0 4px 24px color-mix(in oklch, var(--primary) 6%, transparent);
+    }
+    .art-card:hover .art-card__img {
+      transform: scale(1.02); /* intensidade do zoom */
+    }
+  }
+  @media (hover: none) {
+    /* Mobile: sem hover; toque dá um leve "press" de 120ms. */
+    .art-card:active .art-card__img {
+      transform: scale(0.98);
+      transition: transform 120ms ease-out;
+    }
+  }
+
+  /* --------------------------------------------------------------------------
+     Acessibilidade — desliga TODO movimento perceptível.
+     -------------------------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal[data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+    .mandala-spin {
+      animation: none !important;
+    }
+    .mandala-divider svg :is(circle, ellipse, path) {
+      stroke-dasharray: none !important;
+      stroke-dashoffset: 0 !important;
+      opacity: 1 !important;
+      transition: none !important;
+    }
+    .cursor-glow {
+      display: none !important;
+    }
+    .art-card__img {
+      transition: none !important;
+      transform: none !important;
+    }
+    /* No lugar do zoom: apenas uma borda fina azul ao focar/hover do card. */
+    .art-card:hover {
+      box-shadow: none !important;
+      outline: 1px solid var(--primary);
+      outline-offset: -1px;
+    }
+  }
+}

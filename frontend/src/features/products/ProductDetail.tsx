@@ -11,6 +11,7 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from "@/components/common/Skeleton";
+import { Reveal } from "@/components/common/Reveal";
 
 // Valores que significam "este eixo não se aplica" (compat. com dados antigos
 // cadastrados como "N/A" antes do eixo virar opcional).
@@ -302,14 +303,14 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* A obra — narrativa da estampa */}
+      {/* A obra — narrativa da estampa (reveal ao entrar na viewport) */}
       {product.description && (
-        <section className="mx-auto mt-14 max-w-3xl border-t pt-10">
+        <Reveal as="section" className="mx-auto mt-14 max-w-3xl border-t pt-10">
           <h2 className="font-heading text-xl">A obra</h2>
           <p className="mt-3 leading-relaxed text-muted-foreground whitespace-pre-wrap">
             {product.description}
           </p>
-        </section>
+        </Reveal>
       )}
     </div>
   );

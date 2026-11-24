@@ -1,18 +1,30 @@
 import { Link } from "react-router-dom";
-import { Mandala } from "@/components/brand/Mandala";
+import { Mandala, MandalaStar } from "@/components/brand/Mandala";
+import { SpinningMandala } from "@/components/brand/SpinningMandala";
+import { Reveal } from "@/components/common/Reveal";
+import { CursorGlow } from "@/components/effects/CursorGlow";
+import { useParallax } from "@/lib/useParallax";
 import { Button } from "@/components/ui/button";
 import { buildWhatsappLink } from "@/utils/whatsapp";
 import { MessageCircle } from "lucide-react";
 
 export default function AboutPage() {
+  // Efeito 4 — micro-parallax do retrato (desktop): move-se mais devagar que o
+  // texto ao lado. strength ~0.05, clamp 24px (bem mais contido que o hero).
+  const portraitParallax = useParallax<HTMLDivElement>({
+    strength: 0.05,
+    max: 24,
+  });
+
   return (
     <div>
+      <CursorGlow />
       {/* Hero */}
       <section className="relative overflow-hidden border-b bg-gradient-to-b from-accent/40 to-background">
-        <Mandala
-          strokeWidth={1.5}
-          className="pointer-events-none absolute -right-24 -top-16 h-96 w-96 text-primary/5"
-        />
+        {/* Efeito 2 — marca d'água azul (5%) girando ultra-lento */}
+        <SpinningMandala className="pointer-events-none absolute -right-24 -top-16 h-96 w-96 text-primary/5">
+          <MandalaStar strokeWidth={1.5} className="h-full w-full" />
+        </SpinningMandala>
         <div className="mx-auto max-w-3xl px-4 py-16 text-center md:py-20">
           <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
             a artista
@@ -27,10 +39,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="mx-auto grid max-w-5xl gap-10 px-4 py-14 md:grid-cols-[1fr_1.4fr]">
+      <Reveal className="mx-auto grid max-w-5xl gap-10 px-4 py-14 md:grid-cols-[1fr_1.4fr]">
         {/* Retrato da artista */}
         <div className="flex items-start justify-center">
-          <div className="relative aspect-[4/5] w-full max-w-xs overflow-hidden rounded-xl border bg-accent/30 shadow-sm">
+          <div
+            ref={portraitParallax}
+            className="relative aspect-[4/5] w-full max-w-xs overflow-hidden rounded-xl border bg-accent/30 shadow-sm"
+          >
             <img
               src="/luana.webp"
               alt="Retrato de Luana Rohr"
@@ -118,7 +133,7 @@ export default function AboutPage() {
             </a>
           </div>
         </article>
-      </div>
+      </Reveal>
     </div>
   );
 }
