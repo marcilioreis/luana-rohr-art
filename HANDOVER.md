@@ -1,13 +1,24 @@
 # HANDOVER — Luana Rohr Art (loja de arte autoral)
 
+> **Status (2026-11-27):** ✅ **App no ar no Render** (deploy concluído; backend web service +
+> static site, Postgres com SSL, Upstash Redis `rediss://`, Storage R2). O objetivo original deste
+> documento — publicar no Render — **já foi cumprido**; daqui em diante o HANDOVER é **referência
+> viva** do estado do projeto. A seção “PROMPT PARA O AGENTE” e a “ESTRATÉGIA DE DEPLOY” ficam como
+> registro histórico/runbook. O resumo de tudo que evoluiu desde a criação do doc está em
+> **“Evolução desde o HANDOVER inicial”**; o que ainda falta, em **“Itens em aberto”** (no fim).
+
 > **Como usar:** abra uma **nova sessão do Claude Code com o working directory na raiz deste
 > repositório** (`luana-rohr-art`, o repositório real do projeto — não o `hajel-survey-platform`
-> que serviu de modelo) e cole o conteúdo da seção **“PROMPT PARA O AGENTE”** abaixo. O restante
-> do documento é o material de referência que o agente deve seguir.
+> que serviu de modelo). Para entender o projeto, leia o `CLAUDE.md` (arquitetura) e a seção
+> **“1. Estado atual do projeto”** abaixo. Para reabrir o contexto do deploy original, veja o
+> **“PROMPT PARA O AGENTE”**.
 
 ---
 
 ## PROMPT PARA O AGENTE
+
+> ⚠️ **Histórico:** este prompt descreve a sessão de **deploy inicial**, que **já foi concluída**
+> (app no ar no Render). Mantido como registro. Para trabalho novo, use o `CLAUDE.md` + a seção 1.
 
 Você está no repositório **luana-rohr-art**: uma loja virtual com arte autoral,
 **já implementada, testada e versionada** (clonada de `github.com/marcilioreis/luana-rohr-art`).
@@ -38,15 +49,41 @@ pagamento, export).
 
 - **Backend** (`backend/`): Node 20 + Express 5 + TypeScript (Drizzle ORM, PostgreSQL, BullMQ, Redis,
   Better Auth, Apollo/GraphQL, Zod). Módulos: `products`, `orders`, `admin`. PIX em
-  `src/shared/pix/pix.ts` (EMV TLV + CRC16-CCITT, sem gateway). View **`orders_enriched`** criada ao
-  final de `drizzle/0000_init_store.sql` (após `--> statement-breakpoint`).
+  `src/shared/pix/pix.ts` (EMV TLV + CRC16-CCITT, **Point of Initiation `11` estático**, sem gateway).
+  View **`orders_enriched`** criada ao final de `drizzle/0000_init_store.sql` (após
+  `--> statement-breakpoint`). Storage pluggable (`local` em dev, **R2/S3** em prod). Cache Redis
+  com kill-switch e helper cache-aside (`shared/redis/cache.ts`).
 - **Frontend** (`frontend/`): React 19 + Vite + Tailwind 4 + shadcn/ui + RTK Query + Recharts +
   `qrcode.react`. Loja pública (Home, Sobre, PLP, PDP), carrinho (localStorage), checkout com QR PIX
   (login **ou** convidado, com entrega por CEP/UF ou retirada sem custo), área do cliente e painel
   admin (produtos, pedidos, relatórios, usuários/papéis).
-- **Tests** (`tests/`): Playwright (`store.spec.ts`, `admin.spec.ts`, `auth.spec.ts`).
-- Verificado: lint (0 erros), typecheck, build + PWA, 6/6 testes do PIX; fluxo de pedido ponta a
-  ponta (estoque, transições de status, confirmação de pagamento, RBAC 403, export BullMQ, GraphQL).
+- **Catálogo (evoluído além do MVP):**
+  - **Coleções** curatoriais como dados reais (schema → `/products/collections` → admin → filtro na
+    PLP). Migration `0003`.
+  - **Produto em destaque** no hero da Home, selecionável pelo admin (`featured`). Migration `0004`.
+  - **Eixo de cor/2º eixo opcional** e **auto-seleção de variante** na PDP (peças únicas como quadros
+    não mostram seletor vazio). Migration `0005` (`color` nullable).
+  - **Preço sob consulta** (`priceOnRequest`): esconde preço/carrinho e mostra **CTA do WhatsApp** da
+    artista. Migration `0006`.
+  - **Produtos relacionados** na PDP (curadoria manual bidirecional + fallback coleção/destaque/
+    recentes, cache 60s). Migration `0007`. Admin em `AdminProductForm`.
+  - **Slug editável** no cadastro/edição de produto.
+- **Tema & identidade visual:** redesign editorial (paleta papel/azul/vermelho, mandala, header/
+  footer, favicon). **Dark mode** com toggle claro/escuro/automático (`components/theme/`, chave
+  `lra-theme`, anti-flash no `index.html`). Camada de **efeitos visuais sutis** na loja. Recharts via
+  `useChartColors()` (tokens `--chart-*`). Retrato da artista otimizado (WebP).
+- **Entrega/checkout:** checkout **convidado** (`access_token` + `/pedido/:token`), **frete
+  server-authoritative por UF** (`shared/shipping`), busca por CEP (ViaCEP), **retirada** sem custo.
+  Migrations `0001`/`0002`.
+- **Terminologia:** o produto é **arte autoral** (não mais “camisetas”) — rename aplicado em código e
+  docs.
+- **Tests** (`tests/`): Playwright — `store.spec.ts`, `admin.spec.ts`, `auth.spec.ts`,
+  `related.spec.ts`. Backend: `npm run test` (`tsx --test`) → **15/15** (PIX/CRC16 + resolver de
+  relacionados).
+- **Infra local portável:** `RUNBOOK.md` + `setup.sh` automatizam subir o projeto em outra máquina
+  WSL (deriva credenciais do `backend/.env`, garante o banco, migra e semeia).
+- Verificado: lint (0 erros), typecheck, build + PWA; fluxo de pedido ponta a ponta (estoque,
+  transições de status, confirmação de pagamento, RBAC 403, export BullMQ, GraphQL).
 
 ## 2. Rodar localmente (gotchas importantes)
 
@@ -71,9 +108,18 @@ Admin semeado: `admin@luanarohr.art` / `admin12345` (configurável em `backend/.
 > (fora do navegador) envie o header `Origin` de uma origem confiável (ex.: `http://localhost:5173`),
 > senão o login retorna 403. No navegador o `authClient` já faz isso.
 
+> **Atalho:** `RUNBOOK.md` + `./setup.sh` automatizam este setup em outra máquina (deriva
+> credenciais do `backend/.env`, garante o banco `luana_rohr_art`, migra e semeia). Gotcha conhecido:
+> `COMPOSE_PROJECT_NAME=ka-sf` no ambiente desvia o `docker compose` — use `docker run` isolado
+> (`lra-postgres` :5433 / `lra-redis` :6380) ou `-p luana-rohr-art`.
+
 ---
 
 ## ESTRATÉGIA DE DEPLOY (RENDER)
+
+> ✅ **Já executado** — o app está no ar. Esta seção fica como **runbook de referência** (re-deploy,
+> nova instância, troubleshooting). O passo destrutivo de limpeza do Postgres (Passo 1) **não deve
+> ser repetido** sobre a instância atual, que já é a da loja.
 
 Arquitetura de produção (mesma do Hajel): **Backend = Web Service (Node)**, **Frontend = Static
 Site**, **Redis = Upstash** (compatível com BullMQ), **Postgres = a instância paga reaproveitada**,
@@ -256,13 +302,68 @@ services:
 
 ---
 
+## Evolução desde o HANDOVER inicial (2026-10-30)
+
+Resumo temático do que mudou **depois** do deploy inicial (detalhes completos no `git log`):
+
+**Infra & deploy**
+
+- Postgres com **SSL** no app e no seed (Render exige TLS); rate-limiter **fail-open** quando o Redis
+  cai; PIX com **Point of Initiation `11`** (estático, não `12`). `render.yaml` (blueprint) e storage
+  **R2** corrigido (URL pública dedicada + envs do blueprint; `STORAGE_DRIVER` como `sync:false`).
+- Fila de export: default job options + configuração do worker.
+- Cache Redis endurecido: tratamento de erro + kill-switch + helper **cache-aside** (`cached`).
+- Portabilidade: `RUNBOOK.md` + `setup.sh` para subir em outro WSL (deriva credenciais do
+  `backend/.env`, garante o banco, migra e semeia).
+
+**Checkout & entrega** (migrations `0001`/`0002`)
+
+- Checkout **convidado** (`optionalAuthenticate` + `access_token` + `/pedido/:token`), **frete por
+  UF** server-authoritative (`shared/shipping`), busca por **CEP** (ViaCEP), **retirada** sem custo.
+
+**Catálogo**
+
+- **Coleções** como dados reais: schema → `/products/collections` → admin → filtro na PLP
+  (migration `0003`). *(Item que o doc listava como "não implementado" — agora feito.)*
+- **Produto em destaque** da Home selecionável pelo admin (`featured`) — migration `0004`.
+- **Eixo de cor/2º eixo opcional** + auto-seleção de variante na PDP — migration `0005`.
+- **Preço sob consulta** + CTA do WhatsApp da artista — migration `0006`.
+- **Slug editável** no cadastro/edição de produto.
+- **Produtos relacionados** na PDP — migration `0007` (detalhe abaixo).
+
+**UI/UX**
+
+- Redesign editorial em fases (paleta papel/azul/vermelho, mandala, header/footer, favicon, "A obra").
+- **Dark mode** com toggle claro/escuro/automático (`components/theme/`). Camada de **efeitos
+  visuais** sutis na loja; hover dos gráficos suavizado.
+- Retrato da artista em **WebP** (1.3MB → 58KB); botão de WhatsApp na página Sobre.
+- Rename global **"camisetas" → "arte autoral"** em código e docs.
+
+### Produtos relacionados na PDP — ✅ entregue (migration `0007`)
+
+Estratégia **híbrida**: curadoria manual bidirecional + fallback automático. Mantido em detalhe por
+ser a feature mais recente.
+
+- **Cascata** (até o limite): manuais (admin, bidirecional por `sortOrder`) → mesma **coleção** →
+  **destaques** (`featured`) → **mais recentes**. Nunca deixa a seção vazia.
+- **Filtro:** exclui inativos e o próprio produto; esgotados e `priceOnRequest` **podem** aparecer.
+  **Limite** via env `RELATED_PRODUCTS_LIMIT` (default 4). **Cache Redis** `related:<id>` 60s,
+  invalidado em `setRelated`/`update`/`remove`.
+- **Backend:** tabela `product_related` (FKs `cascade`, PK composta, índice em `related_id`, CHECK
+  anti-auto-relação); `getRelatedPublic` / `getRelatedAdmin` / `setRelated` no service; rotas pública
+  `GET /products/:slug/related` e admin `GET|PUT /products/manage/:id/related` (`product:manage`,
+  audit `product.related.update`). Merge puro em `related.logic.ts` (`pickRelatedIds`).
+- **Frontend:** `features/products/RelatedProducts.tsx` (grid na PDP, esconde se vazio) +
+  `features/admin/products/RelatedProductsEditor.tsx` (curadoria no `AdminProductForm`); endpoints
+  RTK em `productsApi.ts`, tag `RelatedProduct` em `lib/api.ts`.
+- **Testes:** `related.test.ts` (9 casos do resolver; suíte **15/15**) + `related.spec.ts` (E2E:
+  fallback, bidirecional, UI admin — **3/3**). **Nota:** o `global.setup` do E2E faz `DROP DATABASE`
+  no banco do `.env.test` — rode com um banco de nome distinto para não tocar no de dev.
+
+---
+
 ## Itens em aberto / melhorias futuras
-- ~~**Checkout como convidado** (hoje exige login)~~ ✅ **CONCLUÍDO** (commit `ad74a43`): `POST
-  /api/orders` é público (`optionalAuthenticate`); cada pedido de convidado recebe um `access_token`
-  e é acompanhado por `/pedido/:token` (rota pública `GET /api/orders/track/:token`). No mesmo commit:
-  frete server-authoritative por UF (`shared/shipping`), busca de endereço por CEP (ViaCEP) e
-  modalidade de **retirada** (sem custo, agendada). Migrations `0001`/`0002`; E2E cobrindo o fluxo.
-- **Categorias/coleções** na PLP (nice-to-have, não implementado).
+
 - **Domínio custom para as imagens R2** (hoje usa a Public Development URL `r2.dev`, rate-limited):
   migrar `STORAGE_PUBLIC_URL` para um domínio custom quando o tráfego justificar (ver Passo 6).
 - Avaliar servir o frontend por um **Express web service** (em vez de Static Site) se o problema de
