@@ -57,6 +57,17 @@ export const getProductBySlug = async (req: Request, res: Response) => {
   }
 };
 
+export const getRelatedProducts = async (req: Request, res: Response) => {
+  try {
+    const slug = Array.isArray(req.params.slug) ? req.params.slug[0] : req.params.slug;
+    const items = await productService.getRelatedPublic(slug);
+    res.json(items);
+  } catch (error) {
+    console.error('Get related products error:', error);
+    res.status(500).json({ error: 'Falha ao obter produtos relacionados' });
+  }
+};
+
 // ========== ADMIN ==========
 export const listProductsAdmin = async (_req: Request, res: Response) => {
   try {
@@ -126,6 +137,46 @@ export const deleteProduct = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Delete product error:', error);
     res.status(500).json({ error: 'Falha ao excluir produto' });
+  }
+};
+
+// ========== PRODUTOS RELACIONADOS (admin) ==========
+export const getRelatedAdmin = async (req: Request, res: Response) => {
+  try {
+    const product = await productService.getByIdAdmin(getNumericId(req.params.id));
+    if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
+    const items = await productService.getRelatedAdmin(product.id);
+    res.json(items);
+  } catch (error) {
+    console.error('Get related (admin) error:', error);
+    res.status(500).json({ error: 'Falha ao obter produtos relacionados' });
+  }
+};
+
+export const setRelatedAdmin = async (req: Request, res: Response) => {
+  try {
+    const id = getNumericId(req.params.id);
+    const { relatedIds } = req.body as { relatedIds: number[] };
+    const saved = await productService.setRelated(id, relatedIds);
+
+    await db.insert(auditLogs).values({
+      userId: req.user!.id,
+      action: 'product.related.update',
+      entityType: 'product',
+      entityId: id,
+      details: { relatedIds: saved },
+      ip: req.ip,
+    });
+
+    const items = await productService.getRelatedAdmin(id);
+    res.json(items);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message === 'Produto não encontrado' || message === 'Produto relacionado não encontrado') {
+      return res.status(404).json({ error: message });
+    }
+    console.error('Set related (admin) error:', error);
+    res.status(500).json({ error: 'Falha ao salvar produtos relacionados' });
   }
 };
 

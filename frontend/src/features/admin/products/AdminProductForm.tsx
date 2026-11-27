@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Trash2, Plus } from "lucide-react";
+import RelatedProductsEditor from "./RelatedProductsEditor";
 
 interface Props {
   product?: AdminProduct;
@@ -539,6 +540,11 @@ export default function AdminProductForm({ product }: Props) {
               ))}
             </div>
             <Input type="file" accept="image/*" onChange={handleUpload} />
+          </div>
+
+          <div className="space-y-3 rounded-xl border bg-card p-6">
+            <h2 className="font-semibold">Produtos relacionados</h2>
+            <RelatedProductsEditor productId={product.id} />
           </div>
         </>
       )}

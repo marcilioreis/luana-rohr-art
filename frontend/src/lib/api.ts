@@ -59,6 +59,7 @@ export const api = createApi({
   tagTypes: [
     "Product",
     "AdminProduct",
+    "RelatedProduct",
     "Order",
     "AdminOrder",
     "Cart",

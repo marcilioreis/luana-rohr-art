@@ -50,6 +50,13 @@
       "when": 1795099245995,
       "tag": "0006_product_price_on_request",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795817582149,
+      "tag": "0007_product_related",
+      "breakpoints": true
     }
   ]
 }

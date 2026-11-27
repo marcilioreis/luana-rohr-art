@@ -8,6 +8,7 @@ import type {
   VariantPayload,
   ProductImage,
   Collection,
+  AdminRelatedProduct,
 } from "./products.types";
 
 export const productsApi = api.injectEndpoints({
@@ -38,6 +39,10 @@ export const productsApi = api.injectEndpoints({
     getProductBySlug: builder.query<Product, string>({
       query: (slug) => `/products/${slug}`,
       providesTags: (_r, _e, slug) => [{ type: "Product", id: slug }],
+    }),
+    getRelatedProducts: builder.query<ProductListItem[], string>({
+      query: (slug) => `/products/${slug}/related`,
+      providesTags: (_r, _e, slug) => [{ type: "RelatedProduct", id: slug }],
     }),
 
     // ---- Admin ----
@@ -70,7 +75,25 @@ export const productsApi = api.injectEndpoints({
     }),
     deleteProduct: builder.mutation<void, number>({
       query: (id) => ({ url: `/products/${id}`, method: "DELETE" }),
-      invalidatesTags: ["AdminProduct", "Product"],
+      invalidatesTags: ["AdminProduct", "Product", "RelatedProduct"],
+    }),
+
+    // Produtos relacionados (curadoria manual)
+    getAdminRelated: builder.query<AdminRelatedProduct[], number>({
+      query: (id) => `/products/manage/${id}/related`,
+      providesTags: (_r, _e, id) => [{ type: "RelatedProduct", id }],
+    }),
+    setAdminRelated: builder.mutation<
+      AdminRelatedProduct[],
+      { id: number; relatedIds: number[] }
+    >({
+      query: ({ id, relatedIds }) => ({
+        url: `/products/manage/${id}/related`,
+        method: "PUT",
+        body: { relatedIds },
+      }),
+      // Relação é bidirecional: invalida todas as consultas de relacionados.
+      invalidatesTags: ["RelatedProduct"],
     }),
 
     // Variantes
@@ -153,6 +176,9 @@ export const {
   useGetFeaturedProductQuery,
   useGetProductsQuery,
   useGetProductBySlugQuery,
+  useGetRelatedProductsQuery,
+  useGetAdminRelatedQuery,
+  useSetAdminRelatedMutation,
   useGetAdminProductsQuery,
   useGetAdminProductQuery,
   useCreateProductMutation,

@@ -74,6 +74,14 @@ export interface AdminProduct extends Product {
   totalStock: number;
 }
 
+// Item da lista de relacionados no admin (relações manuais "próprias" do produto)
+export interface AdminRelatedProduct {
+  id: number;
+  name: string;
+  slug: string;
+  active: boolean;
+}
+
 export interface ProductPayload {
   name: string;
   slug?: string;

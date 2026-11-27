@@ -9,6 +9,7 @@ import {
   updateProductSchema,
   createVariantSchema,
   updateVariantSchema,
+  setRelatedProductsSchema,
 } from '../../shared/validation/schemas.js';
 import * as controller from './products.controller.js';
 
@@ -30,6 +31,15 @@ const manage = [authenticate, loadPermissions, authorize('product:manage')];
  */
 router.get('/manage', ...manage, controller.listProductsAdmin);
 router.get('/manage/:id', ...manage, controller.getProductAdmin);
+
+// Produtos relacionados (curadoria manual)
+router.get('/manage/:id/related', ...manage, controller.getRelatedAdmin);
+router.put(
+  '/manage/:id/related',
+  ...manage,
+  validateBody(setRelatedProductsSchema),
+  controller.setRelatedAdmin
+);
 
 /**
  * @openapi
@@ -119,5 +129,21 @@ router.get('/featured', controller.getFeaturedProduct);
  *       404: { description: Produto não encontrado }
  */
 router.get('/:slug', controller.getProductBySlug);
+
+/**
+ * @openapi
+ * /api/products/{slug}/related:
+ *   get:
+ *     summary: Produtos relacionados de um produto (PDP)
+ *     tags: [Produtos]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Lista de produtos relacionados (pode ser vazia) }
+ */
+router.get('/:slug/related', controller.getRelatedProducts);
 
 export default router;

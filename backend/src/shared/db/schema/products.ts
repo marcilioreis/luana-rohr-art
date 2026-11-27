@@ -9,7 +9,11 @@ import {
   jsonb,
   timestamp,
   doublePrecision,
+  primaryKey,
+  index,
+  check,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { user } from './auth.js';
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
@@ -78,8 +82,31 @@ export const productImages = pgTable('product_images', {
   order: integer('order').default(0),
 });
 
+// ========== PRODUTOS RELACIONADOS (curadoria manual) ==========
+// Relação direcional gravada; a leitura pública trata como BIDIRECIONAL
+// (A→B também mostra A na PDP de B). Auto-relação é proibida por CHECK.
+export const productRelated = pgTable(
+  'product_related',
+  {
+    productId: integer('product_id')
+      .references(() => products.id, { onDelete: 'cascade' })
+      .notNull(),
+    relatedId: integer('related_id')
+      .references(() => products.id, { onDelete: 'cascade' })
+      .notNull(),
+    sortOrder: integer('sort_order').default(0).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.productId, t.relatedId] }),
+    index('product_related_related_idx').on(t.relatedId),
+    check('product_related_no_self', sql`${t.productId} <> ${t.relatedId}`),
+  ]
+);
+
 // Tipos inferidos
 export type Collection = InferSelectModel<typeof collections>;
+export type ProductRelated = InferSelectModel<typeof productRelated>;
+export type InsertProductRelated = InferInsertModel<typeof productRelated>;
 export type InsertCollection = InferInsertModel<typeof collections>;
 export type Product = InferSelectModel<typeof products>;
 export type InsertProduct = InferInsertModel<typeof products>;

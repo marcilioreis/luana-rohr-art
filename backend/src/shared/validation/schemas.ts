@@ -52,6 +52,13 @@ export const updateProductSchema = z
     message: 'Nenhum campo para atualizar',
   });
 
+// Define a lista de produtos relacionados (curadoria manual) de um produto.
+// Aceita ids inteiros positivos; o service deduplica, remove o próprio id e
+// valida a existência. Lista vazia = limpar as relações manuais.
+export const setRelatedProductsSchema = z.object({
+  relatedIds: z.array(z.number().int().positive()).max(50, 'Máximo de 50 produtos relacionados'),
+});
+
 export const createVariantSchema = variantSchema;
 export const updateVariantSchema = z
   .object({

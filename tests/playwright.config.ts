@@ -34,7 +34,7 @@ export default defineConfig({
     // Testes que dependem de login de admin já realizado
     {
       name: 'authenticated',
-      testMatch: ['admin.spec.ts'],
+      testMatch: ['admin.spec.ts', 'related.spec.ts'],
       dependencies: ['setup'],
       use: {
         storageState: STORAGE_STATE,  // reutiliza sessão
